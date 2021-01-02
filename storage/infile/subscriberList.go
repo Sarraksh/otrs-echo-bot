@@ -6,15 +6,16 @@ import (
 )
 
 // Store and manage subscribers for each subscription.
-type Subscribers []Subscriber
+type SubscriberList []Subscriber
 
 //
-func (s *Subscribers) add(newSub uint64) error {
+func (s *SubscriberList) add(newSub uint64) error {
 	currentSub := Subscriber{
 		UserID:           newSub,
 		SubscriptionTime: time.Now(),
 	}
 	if len(*s) == 0 {
+		*s = make([]Subscriber, 0, 32)
 		*s = append(*s, currentSub)
 		return nil
 	}
@@ -27,7 +28,7 @@ func (s *Subscribers) add(newSub uint64) error {
 	return nil
 }
 
-func (s *Subscribers) remove(remSub uint64) error {
+func (s *SubscriberList) remove(remSub uint64) error {
 	if len(*s) == 0 {
 		return errors.ErrNotSubscribed
 	}

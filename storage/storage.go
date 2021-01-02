@@ -16,7 +16,7 @@ type Storage interface {
 	// Create new empty user and return his ID.
 	AddUser() uint64
 
-	AddUserSMID(ID uint64, socialMediaID string)
+	AddUserSMID(ID uint64, socialMediaName, socialMediaID string)
 
 	// Get user ID by his social media ID.
 	GetUserBySMID(socialMediaID string) uint64
