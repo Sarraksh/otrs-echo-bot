@@ -19,7 +19,7 @@ type Storage interface {
 	AddUserSMID(ID uint64, socialMediaName, socialMediaID string)
 
 	// Get user ID by his social media ID.
-	GetUserBySMID(socialMediaID string) uint64
+	GetUserBySMID(socialMediaID string) (uint64, error)
 
 	// Add user ID to specified subscribers list.
 	AddSub(userID uint64, subName string) error

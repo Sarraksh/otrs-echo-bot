@@ -10,3 +10,6 @@ var ErrPersistentStorageNotEmpty = errors.New("persistent storage not empty")
 var ErrSubscriptionNotExist = errors.New("subscription does not exist")
 var ErrAlreadySubscribed = errors.New("already subscribed")
 var ErrNotSubscribed = errors.New("not subscribed")
+
+// Errors for users
+var ErrUserNotFound = errors.New("user not found")

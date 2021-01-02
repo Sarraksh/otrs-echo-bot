@@ -1,7 +1,7 @@
 package infile
 
 type User struct {
-	FirstName         string
-	LastName          string
-	SocialMediaIDList map[string]SocialMediaData
+	FirstName           string
+	LastName            string
+	SocialMediaDataList map[string]SocialMediaData
 }
