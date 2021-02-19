@@ -2,6 +2,7 @@ package CLILogger
 
 import (
 	"fmt"
+	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	"log"
 )
 
@@ -9,12 +10,13 @@ type CLILogger struct {
 	Module string // Name of module that uses logger.
 }
 
-func NewDefault(logFilePath string) CLILogger {
+func NewDefault() CLILogger {
 	return CLILogger{}
 }
 
-func (cl *CLILogger) SetModuleName(name string) {
+func (cl CLILogger) SetModuleName(name string) logger.Logger {
 	cl.Module = name
+	return cl
 }
 
 func (cl CLILogger) Error(message string) {

@@ -2,6 +2,7 @@ package zapLogger
 
 import (
 	"fmt"
+	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -66,8 +67,9 @@ func formatString(module, message string) string {
 }
 
 // Set caller module name.
-func (zl *ZapLogger) SetModuleName(name string) {
+func (zl ZapLogger) SetModuleName(name string) logger.Logger {
 	zl.Module = name
+	return zl
 }
 
 func (zl ZapLogger) Error(message string) {
