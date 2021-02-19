@@ -9,12 +9,12 @@ import (
 )
 
 type ZapLogger struct {
-	Logger *zap.Logger // Initialized logger
-	Module string      // Name of module that uses logger
+	Logger *zap.Logger // Initialized logger.
+	Module string      // Name of module that uses logger.
 }
 
 // Return logger with debug level 10 MB file size and 5 log files preservation.
-func (zl ZapLogger) NewDefault(logFilePath string) ZapLogger {
+func NewDefault(logFilePath string) ZapLogger {
 	zapLogger := NewZapSimpleLoggerWithRotation("debug", logFilePath, 10, 5)
 	return ZapLogger{
 		Logger: zapLogger,
