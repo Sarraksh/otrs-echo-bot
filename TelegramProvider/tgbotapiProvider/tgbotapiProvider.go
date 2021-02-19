@@ -26,16 +26,16 @@ func New(logger logger.Logger, botToken string) (TelegramModule, error) {
 	}, nil
 }
 
-func Update(bot *tgbotapi.BotAPI) {
+func Update(bot TelegramModule) {
 
-	bot.Debug = true
+	bot.bot.Debug = true
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	log.Printf("Authorized on account %s", bot.bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates, err := bot.bot.GetUpdatesChan(u)
 	if err != nil {
 		log.Printf("Initialise  updates error - '%v'", err)
 		return
