@@ -14,12 +14,12 @@ type TelegramModule struct {
 }
 
 func New(logger logger.Logger, botToken string) (TelegramModule, error) {
+	logger = logger.SetModuleName(ModuleName)
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
 		return TelegramModule{}, err
 	}
 
-	logger.SetModuleName(ModuleName)
 	return TelegramModule{
 		bot: bot,
 		Log: logger,

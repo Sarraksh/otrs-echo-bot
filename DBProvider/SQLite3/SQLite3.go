@@ -35,8 +35,7 @@ type lastID struct {
 // Creates a new database file if the file does not exist.
 // Validates the table structure and  create table if not exist.
 func (db *DB) Initialise(logger logger.Logger, directory string) error {
-	logger.SetModuleName(ModuleName)
-	db.Log = logger
+	db.Log = logger.SetModuleName(ModuleName)
 	db.Log.Debug("Initialisation started")
 	db.FileFullPath = filepath.Join(directory, DBFileName)
 	db.Log.Debug(fmt.Sprintf("Use DB file '%v'", db.FileFullPath))
