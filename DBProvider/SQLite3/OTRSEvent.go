@@ -10,7 +10,7 @@ import (
 // Create new OTRS event in database.
 // Increment LastID.OTRSEventList even if error occurred,
 func (db *DB) OTRSEventCreateNew(Channel, Type, TicketID string) error {
-	db.Log.Info(fmt.Sprintf("Write ne OTRS event with type '%+v' and ticket ID '%+v'", Type, TicketID))
+	db.Log.Info(fmt.Sprintf("Write new OTRS event with type '%+v' and ticket ID '%+v'", Type, TicketID))
 
 	// Prepare data for insert.
 	db.LastIDmx.Lock()
@@ -29,7 +29,7 @@ func (db *DB) OTRSEventCreateNew(Channel, Type, TicketID string) error {
 	// Prepare insert string.
 	Insert := "insert into OTRSEventList(ID, Status, Channel, Type, TicketID, Created, ActivationInterval, NextActivation) values"
 	sqlStatement := fmt.Sprintf(
-		"%s(%d, '%s', '%s', '%s',%d, %d, %d, %d)",
+		"%s(%d, '%s', '%s', '%s' ,%d, %d, %d, %d)",
 		Insert,
 		ID,
 		Status,
