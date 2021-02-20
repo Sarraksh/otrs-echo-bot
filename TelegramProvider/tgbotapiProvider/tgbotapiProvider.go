@@ -68,31 +68,16 @@ func (bot TelegramModule) Update(ctx context.Context, cancel context.CancelFunc)
 	for {
 		select {
 		case update := <-updates:
-			messageProcessor(*update.Message)
+			messageProcessor(bot, *update.Message)
 		case <-ctx.Done():
 			log.Printf("Closing signal goroutine")
 			return ctx.Err()
 		}
 	}
-
-	//if update.Message == nil { // Ignore any non-Message Updates.
-	//	continue
-	//}
-
-	//log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-	//msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-	//msg.ReplyToMessageID = update.Message.MessageID
-
-	//q := *update.EditedMessage.Entities
-	//log.Printf("%T", q)
-
-	//bot.Send(msg)
-
 }
 
 //
-func messageProcessor(message tgbotapi.Message) {
+func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 	commandList := extractCommandList(message)
 
 	// If no commands received stop message processing.
@@ -103,7 +88,13 @@ func messageProcessor(message tgbotapi.Message) {
 
 	// Process all provided commands.
 	for _, command := range commandList {
+		bot.Log.Debug(fmt.Sprintf("Received command '%v' in message '%v'", command.Name, message.Text))
 		switch command.Name {
+		case "help":
+			err := sendPlainTextMessage(bot.bot, message.Chat.ID, helpCommandResponse)
+			if err != nil {
+				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
+			}
 		case "firstName":
 			// TODO - add response to user
 			// TODO - save data into persistent storage
@@ -113,11 +104,15 @@ func messageProcessor(message tgbotapi.Message) {
 			// TODO - save data into persistent storage
 			log.Printf("'%v' command recived. Set lastName to '%v'", command, message.Text[len("/lastName "):])
 		case "start":
-			// TODO - add response to user with initial help message
-			log.Printf("'%v' command recived", command)
+			err := sendPlainTextMessage(bot.bot, message.Chat.ID, startCommandResponse)
+			if err != nil {
+				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
+			}
 		default:
-			// TODO - add response to user with help message
-			log.Printf("received invalid command - '%v'", command)
+			err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidCommandResponse)
+			if err != nil {
+				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
+			}
 		}
 	}
 }
@@ -146,4 +141,11 @@ func extractCommandList(message tgbotapi.Message) []Command {
 	}
 
 	return commandList
+}
+
+// Send simple text message into provided chat.
+func sendPlainTextMessage(bot *tgbotapi.BotAPI, chatID int64, text string) error {
+	msg := tgbotapi.NewMessage(chatID, text)
+	_, err := bot.Send(msg)
+	return err
 }
