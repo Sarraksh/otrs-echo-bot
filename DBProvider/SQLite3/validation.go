@@ -157,7 +157,7 @@ func getValidTableInfo() map[string][]columnInfo {
 		columnInfo{CID: 5, Name: "Phone", Type: "integer", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 6, Name: "Email", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 7, Name: "Created", Type: "integer", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
-		columnInfo{CID: 8, Name: "TelegramID", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
+		columnInfo{CID: 8, Name: "TelegramID", Type: "integer", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 	)
 	result["BotUserList"] = tmpTableInfo
 

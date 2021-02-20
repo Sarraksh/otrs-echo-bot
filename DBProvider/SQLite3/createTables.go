@@ -17,7 +17,7 @@ create table BotUserList (
 	Phone integer,
 	Email text,
 	Created integer not null,
-	TelegramID text
+	TelegramID integer
 );`
 	sqlCreateOTRSEventListTable = `
 create table OTRSEventList (
