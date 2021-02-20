@@ -33,5 +33,5 @@ func (cl CLILogger) Debug(message string) {
 
 // Add formatted module name to error string.
 func formatString(level, module, message string) string {
-	return fmt.Sprintf("[%5s] [%25s] - '%s'", level, module, message)
+	return fmt.Sprintf("[%5s] [%25s] - %s", level, module, message)
 }
