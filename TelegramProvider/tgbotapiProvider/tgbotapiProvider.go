@@ -1,6 +1,9 @@
 package tgbotapiProvider
 
 import (
+	"context"
+	"fmt"
+	"github.com/Sarraksh/otrs-echo-bot/DBProvider"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
@@ -8,72 +11,84 @@ import (
 
 const ModuleName = "TelegramProviderTgBotApi"
 
+// Implement TelegramProvider interface.
 type TelegramModule struct {
 	bot *tgbotapi.BotAPI
 	Log logger.Logger
+	DB  *DBProvider.DBProvider
 }
 
+// Contain command name and offset.
+type Command struct {
+	Name   string // Command name.
+	Offset uint64 // First command character (after slash) in message text.
+}
+
+// Create telegram bot.
+// Add created bot and provided logger into provider and return it.
 func New(logger logger.Logger, botToken string) (TelegramModule, error) {
 	logger = logger.SetModuleName(ModuleName)
+	logger.Debug("Initialisation started")
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
+		logger.Error(fmt.Sprintf("Initialisation failed - '%v'", err))
 		return TelegramModule{}, err
 	}
 
+	// Enable bot library debug messages.
+	//bot.bot.Debug = true
+
+	logger.Debug(fmt.Sprintf("Authorized on account %s", bot.Self.UserName))
+	logger.Debug("Initialisation complete")
 	return TelegramModule{
 		bot: bot,
 		Log: logger,
 	}, nil
 }
 
-func Update(bot TelegramModule) {
+// Set DBProvider.
+func (bot TelegramModule) SetDBProvider(db *DBProvider.DBProvider) TelegramModule {
+	bot.DB = db
+	return bot
+}
 
-	bot.bot.Debug = true
-
-	log.Printf("Authorized on account %s", bot.bot.Self.UserName)
-
+// Listener for Telegram API updates with context control.
+func (bot TelegramModule) Update(ctx context.Context, cancel context.CancelFunc) error {
+	// Initialise API listener.
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-
 	updates, err := bot.bot.GetUpdatesChan(u)
 	if err != nil {
-		log.Printf("Initialise  updates error - '%v'", err)
-		return
+		bot.Log.Error(fmt.Sprintf("Get updates error - '%v'", err))
+		cancel()
+		return err
 	}
 
-	for update := range updates {
-		//if update.Message == nil { // Ignore any non-Message Updates.
-		//	continue
-		//}
-
-		//log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-		//msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-		//msg.ReplyToMessageID = update.Message.MessageID
-
-		log.Printf("update:\n'%+v'", update)
-		if update.Message != nil {
-			log.Printf("update.Message:\n'%+v'", update.Message)
-			log.Printf("update.Message.Chat:\n'%+v'", update.Message.Chat)
-			log.Printf("update.Message.Entities:\n'%+v'", update.Message.Entities)
+	// Wait for updates from Telegram API or sigterm.
+	for {
+		select {
+		case update := <-updates:
 			messageProcessor(*update.Message)
-		} else {
-			log.Printf("update.Message:\n'%+v'", nil)
-			log.Printf("update.Message.Chat:\n'%+v'", nil)
+		case <-ctx.Done():
+			log.Printf("Closing signal goroutine")
+			return ctx.Err()
 		}
-		if update.EditedMessage != nil {
-			log.Printf("update.EditedMessage:\n'%+v'", update.EditedMessage)
-			log.Printf("update.EditedMessage.Chat:\n'%+v'", update.EditedMessage.Chat)
-			log.Printf("update.EditedMessage.Entities:\n'%+v'", update.EditedMessage.Entities)
-			messageProcessor(*update.EditedMessage)
-
-		}
-
-		//q := *update.EditedMessage.Entities
-		//log.Printf("%T", q)
-
-		//bot.Send(msg)
 	}
+
+	//if update.Message == nil { // Ignore any non-Message Updates.
+	//	continue
+	//}
+
+	//log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
+	//msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	//msg.ReplyToMessageID = update.Message.MessageID
+
+	//q := *update.EditedMessage.Entities
+	//log.Printf("%T", q)
+
+	//bot.Send(msg)
+
 }
 
 //
@@ -86,8 +101,9 @@ func messageProcessor(message tgbotapi.Message) {
 		return
 	}
 
+	// Process all provided commands.
 	for _, command := range commandList {
-		switch command {
+		switch command.Name {
 		case "firstName":
 			// TODO - add response to user
 			// TODO - save data into persistent storage
@@ -108,23 +124,26 @@ func messageProcessor(message tgbotapi.Message) {
 
 // Extract all commands from received message.
 // If entities not received or contain only non-commands, return empty slice.
-func extractCommandList(message tgbotapi.Message) []string {
-	// If Entities not received return empty slice
+func extractCommandList(message tgbotapi.Message) []Command {
+	// If entities not received return empty slice.
 	if message.Entities == nil {
-		return make([]string, 0, 0)
+		return make([]Command, 0, 0)
 	}
 
-	commands := make([]string, 0, 8)
+	// Search for commandList.
+	commandList := make([]Command, 0, 8)
 	entities := *message.Entities
-
-	// Search commands
 	for _, entity := range entities {
 		if entity.Type == "bot_command" {
 			firstCharacter := entity.Offset + 1 // Avoid initial slash.
 			lastCharacter := entity.Offset + entity.Length
-			commands = append(commands, message.Text[firstCharacter:lastCharacter])
+			command := Command{
+				Name:   message.Text[firstCharacter:lastCharacter],
+				Offset: uint64(firstCharacter),
+			}
+			commandList = append(commandList, command)
 		}
 	}
 
-	return commands
+	return commandList
 }
