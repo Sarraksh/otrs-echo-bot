@@ -13,7 +13,7 @@ create table BotUserList (
 	Token text not null,
 	Active integer not null,
 	FirstName text,
-	SecondName text,
+	LastName text,
 	Phone integer,
 	Email text,
 	Created integer not null,

@@ -153,7 +153,7 @@ func getValidTableInfo() map[string][]columnInfo {
 		columnInfo{CID: 1, Name: "Token", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 2, Name: "Active", Type: "integer", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 3, Name: "FirstName", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
-		columnInfo{CID: 4, Name: "SecondName", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
+		columnInfo{CID: 4, Name: "LastName", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 5, Name: "Phone", Type: "integer", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 6, Name: "Email", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 7, Name: "Created", Type: "integer", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
