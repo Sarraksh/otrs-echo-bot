@@ -107,7 +107,7 @@ func getLastIDFromTable(db *sql.DB, Log logger.Logger, tableName, timestampColum
 		return 0, err
 	}
 
-	// Prepare and execute transaction for update row.
+	// Prepare transaction for query.
 	statement, err := transaction.Prepare(`SELECT ? FROM ? ORDER BY ? DESC LIMIT 1;`)
 	if err != nil {
 		return 0, err
@@ -119,10 +119,10 @@ func getLastIDFromTable(db *sql.DB, Log logger.Logger, tableName, timestampColum
 	if err != nil {
 		return 0, err
 	}
+	defer rows.Close()
 
 	// Check query result.
 	var resultID int64 = 0
-	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&resultID)
 		if err != nil {
@@ -135,7 +135,6 @@ func getLastIDFromTable(db *sql.DB, Log logger.Logger, tableName, timestampColum
 		Log.Error(fmt.Sprintf("While iteration for table '%s' - '%v'", tableName, err))
 		return 0, err
 	}
-	defer rows.Close()
 
 	// Close transaction.
 	err = transaction.Commit()
