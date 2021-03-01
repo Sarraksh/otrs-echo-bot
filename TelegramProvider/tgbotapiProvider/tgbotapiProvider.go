@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/DBProvider"
+	"github.com/Sarraksh/otrs-echo-bot/common/errors"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
+	"regexp"
 )
 
 const ModuleName = "TelegramProviderTgBotApi"
@@ -15,7 +17,7 @@ const ModuleName = "TelegramProviderTgBotApi"
 type TelegramModule struct {
 	bot *tgbotapi.BotAPI
 	Log logger.Logger
-	DB  *DBProvider.DBProvider
+	DB  DBProvider.DBProvider
 }
 
 // Contain command name and offset.
@@ -47,7 +49,7 @@ func New(logger logger.Logger, botToken string) (TelegramModule, error) {
 }
 
 // Set DBProvider.
-func (bot TelegramModule) SetDBProvider(db *DBProvider.DBProvider) TelegramModule {
+func (bot TelegramModule) SetDBProvider(db DBProvider.DBProvider) TelegramModule {
 	bot.DB = db
 	return bot
 }
@@ -68,7 +70,7 @@ func (bot TelegramModule) Update(ctx context.Context, cancel context.CancelFunc)
 	for {
 		select {
 		case update := <-updates:
-			messageProcessor(bot, *update.Message)
+			go messageProcessor(bot, *update.Message)
 		case <-ctx.Done():
 			log.Printf("Closing signal goroutine")
 			return ctx.Err()
@@ -96,13 +98,25 @@ func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
 			}
 		case "firstName":
-			// TODO - add response to user
-			// TODO - save data into persistent storage
-			log.Printf("'%v' command recived. Set firstName to '%v'", command, message.Text[len("/firstName "):])
+			log.Printf("'%v' command received. Change FirstName", command)
+			err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
+			if err != nil {
+				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
+				err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidFirstNameResponse)
+				if err != nil {
+					bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
+				}
+			}
 		case "lastName":
-			// TODO - add response to user
-			// TODO - save data into persistent storage
-			log.Printf("'%v' command recived. Set lastName to '%v'", command, message.Text[len("/lastName "):])
+			log.Printf("'%v' command received. Change LastName", command)
+			err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
+			if err != nil {
+				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
+				err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidLastNameResponse)
+				if err != nil {
+					bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
+				}
+			}
 		case "start":
 			err := sendPlainTextMessage(bot.bot, message.Chat.ID, startCommandResponse)
 			if err != nil {
@@ -148,4 +162,61 @@ func sendPlainTextMessage(bot *tgbotapi.BotAPI, chatID int64, text string) error
 	msg := tgbotapi.NewMessage(chatID, text)
 	_, err := bot.Send(msg)
 	return err
+}
+
+// Get russian name from argument.
+func getNameFromCommandArgument(text string, commandOffset, commandLength uint64) (string, error) {
+	argumentOffset := commandOffset + commandLength + 1
+	if int64(len(text))-1-int64(argumentOffset) <= 0 {
+		return "", errors.ErrArgumentNotProvided
+	}
+
+	reFirstArgumentWithSpaces := regexp.MustCompile(`^\s*\S+`)
+	firstArgumentWithSpaces := reFirstArgumentWithSpaces.FindString(text[argumentOffset:])
+
+	reFirstArgument := regexp.MustCompile(`\S+`)
+	firstArgument := reFirstArgument.FindString(firstArgumentWithSpaces)
+
+	if len(firstArgumentWithSpaces) < 1 {
+		return "", errors.ErrArgumentNotProvided
+	}
+
+	reRussianLettersOnly := regexp.MustCompile(`^[абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ]+$`)
+	argument := reRussianLettersOnly.FindString(firstArgument)
+
+	if len(argument) < 1 {
+		return "", errors.ErrInvalidArgument
+	}
+
+	return argument, nil
+}
+
+// Validate argument for /firstName command and write it into DB if valid.
+func updateFirstName(db DBProvider.DBProvider, command Command, text string, telegramID int64) error {
+	firstName, err := getNameFromCommandArgument(text, command.Offset, uint64(len(command.Name)))
+	if err != nil {
+		return err
+	}
+
+	err = db.BotUserUpdateFirstName(telegramID, firstName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Validate argument for /lastName command and write it into DB if valid.
+func updateLastName(db DBProvider.DBProvider, command Command, text string, telegramID int64) error {
+	lastName, err := getNameFromCommandArgument(text, command.Offset, uint64(len(command.Name)))
+	if err != nil {
+		return err
+	}
+
+	err = db.BotUserUpdateFirstName(telegramID, lastName)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
