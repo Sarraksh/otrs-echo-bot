@@ -55,7 +55,7 @@ func (bot TelegramModule) SetDBProvider(db DBProvider.DBProvider) TelegramModule
 }
 
 // Listener for Telegram API updates with context control.
-func (bot TelegramModule) Update(ctx context.Context, cancel context.CancelFunc) error {
+func (bot TelegramModule) UpdateListener(ctx context.Context, cancel context.CancelFunc) error {
 	// Initialise API listener.
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
