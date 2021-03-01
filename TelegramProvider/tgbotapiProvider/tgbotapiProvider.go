@@ -109,7 +109,7 @@ func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 			}
 		case "lastName":
 			log.Printf("'%v' command received. Change LastName", command)
-			err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
+			err := updateLastName(bot.DB, command, message.Text, message.Chat.ID)
 			if err != nil {
 				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
 				err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidLastNameResponse)
