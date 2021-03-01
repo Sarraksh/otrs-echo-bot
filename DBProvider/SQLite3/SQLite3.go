@@ -101,16 +101,26 @@ func getLastIDFromTable(db *sql.DB, Log logger.Logger, tableName, timestampColum
 	Log.Debug(fmt.Sprintf("Get last ID from table '%v' by timestamp. Timestamp column name '%v'. ID column name '%v'.",
 		tableName, timestampColumn, idColumn))
 
-	// Query provided table for last ID.
-	queryString := fmt.Sprintf("SELECT %s FROM %s ORDER BY %s DESC LIMIT 1;",
-		idColumn, tableName, timestampColumn)
-	Log.Debug(fmt.Sprintf("Query string '%v'", queryString))
-	rows, err := db.Query(queryString)
+	// Create new sql transaction.
+	transaction, err := db.Begin()
 	if err != nil {
 		return 0, err
 	}
 
-	// Check query result
+	// Prepare and execute transaction for update row.
+	statement, err := transaction.Prepare(`SELECT ? FROM ? ORDER BY ? DESC LIMIT 1;`)
+	if err != nil {
+		return 0, err
+	}
+	defer statement.Close()
+
+	// Query provided table for last ID.
+	rows, err := statement.Query(idColumn, tableName, timestampColumn)
+	if err != nil {
+		return 0, err
+	}
+
+	// Check query result.
 	var resultID int64 = 0
 	defer rows.Close()
 	for rows.Next() {
@@ -125,5 +135,39 @@ func getLastIDFromTable(db *sql.DB, Log logger.Logger, tableName, timestampColum
 		Log.Error(fmt.Sprintf("While iteration for table '%s' - '%v'", tableName, err))
 		return 0, err
 	}
+	defer rows.Close()
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
+		return 0, err
+	}
+
 	return resultID, nil
+}
+
+func executeStatement(db *sql.DB, statement string) error {
+	transaction, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	preparedStatement, err := transaction.Prepare(statement)
+	if err != nil {
+		return err
+	}
+	defer preparedStatement.Close()
+
+	_, err = preparedStatement.Exec()
+	if err != nil {
+		return err
+	}
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -23,11 +23,22 @@ func (db *DB) BotUserAdd(tgID int64) error {
 	Email := ""
 	Created := time.Now().Unix()
 
-	// Prepare insert string.
-	Insert := "insert into BotUserList(ID, Token, Active, FirstName, TicketID, LastName, Phone, Email, Created, TelegramID) values"
-	sqlStatement := fmt.Sprintf(
-		"%s(%d, '%s', %d, '%s', '%s', %d, '%s', %d, %d)",
-		Insert,
+	// Create new sql transaction.
+	sqlTransaction, err := db.Instance.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Prepare and execute transaction for insert row.
+	sqlStatement, err := sqlTransaction.Prepare(
+		`insert into BotUserList(ID, Token, Active, FirstName, LastName, Phone, Email, Created, TelegramID)
+values(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	)
+	if err != nil {
+		return err
+	}
+	defer sqlStatement.Close()
+	_, err = sqlStatement.Exec(
 		userID,
 		Token,
 		Active,
@@ -38,10 +49,12 @@ func (db *DB) BotUserAdd(tgID int64) error {
 		Created,
 		tgID,
 	)
-	db.Log.Debug(fmt.Sprintf("Insert string - '%+v'", sqlStatement))
+	if err != nil {
+		return err
+	}
 
-	// Write data into DB.
-	_, err := db.Instance.Exec(sqlStatement)
+	// Close transaction.
+	err = sqlTransaction.Commit()
 	if err != nil {
 		return err
 	}
@@ -57,12 +70,28 @@ func (db *DB) BotUserUpdateFirstName(tgID int64, firstName string) error {
 		return err
 	}
 
-	// Update data into DB.
-	sqlStatement := fmt.Sprintf("UPDATE BotUserList SET FirstName = '%s' WHERE ID = %d;", firstName, userID)
-	db.Log.Debug(fmt.Sprintf("Query string '%v'", sqlStatement))
-	_, err = db.Instance.Exec(sqlStatement)
+	// Create new sql transaction.
+	transaction, err := db.Instance.Begin()
 	if err != nil {
-		db.Log.Error(fmt.Sprintf("Can't get update BotUserList - '%+v'", err))
+		return err
+	}
+
+	// Prepare and execute transaction for update row.
+	statement, err := transaction.Prepare(`UPDATE BotUserList SET FirstName = ? WHERE ID = ?;`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	// Update data into DB.
+	_, err = statement.Exec(firstName, userID)
+	if err != nil {
+		return err
+	}
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
 		return err
 	}
 
@@ -77,12 +106,28 @@ func (db *DB) BotUserUpdateLastName(tgID int64, lastName string) error {
 		return err
 	}
 
-	// Update data into DB.
-	sqlStatement := fmt.Sprintf("UPDATE BotUserList SET LastName = '%s' WHERE ID = %d;", lastName, userID)
-	db.Log.Debug(fmt.Sprintf("Query string '%v'", sqlStatement))
-	_, err = db.Instance.Exec(sqlStatement)
+	// Create new sql transaction.
+	transaction, err := db.Instance.Begin()
 	if err != nil {
-		db.Log.Error(fmt.Sprintf("Can't get update BotUserList - '%+v'", err))
+		return err
+	}
+
+	// Prepare and execute transaction for update row.
+	statement, err := transaction.Prepare(`UPDATE BotUserList SET LastName = ? WHERE ID = ?;`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	// Update data into DB.
+	_, err = statement.Exec(lastName, userID)
+	if err != nil {
+		return err
+	}
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
 		return err
 	}
 

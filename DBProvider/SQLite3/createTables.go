@@ -81,7 +81,7 @@ func createAllTablesIfNotExist(db *sql.DB, Log logger.Logger) error {
 	tableCreateStatementList["MessageList"] = sqlCreateMessageListTable
 	tableCreateStatementList["ClientsAssignedToTeams"] = sqlCreateClientsAssignedToTeamsTable
 
-	for currentTable, sqlStatement := range tableCreateStatementList {
+	for currentTable, statement := range tableCreateStatementList {
 		Log.Debug(fmt.Sprintf("Processing '%+v' table", currentTable))
 		tableExist, err := isTableExists(db, Log, currentTable)
 		if err != nil {
@@ -91,7 +91,8 @@ func createAllTablesIfNotExist(db *sql.DB, Log logger.Logger) error {
 			continue
 		}
 		Log.Debug(fmt.Sprintf("Table '%+v' not exist. Create it", currentTable))
-		_, err = db.Exec(sqlStatement)
+
+		err = executeStatement(db, statement)
 		if err != nil {
 			return err
 		}
