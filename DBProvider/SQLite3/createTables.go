@@ -58,14 +58,10 @@ create table MessageList (
 	Created integer not null,
 	Sent integer
 );`
-	sqlCreateClientsAssignedToTeamsTable = `
-create table MessageList (
-	ID integer not null primary key,
-	SocialMedia text not null,
-	ChatID text not null,
-	Text text not null,
-	Created integer not null,
-	Sent integer
+	sqlCreateClientTeamBoundTable = `
+create table ClientTeamBound (
+	Client text not null primary key,
+	Team text not null,
 );`
 )
 
@@ -79,7 +75,7 @@ func createAllTablesIfNotExist(db *sql.DB, Log logger.Logger) error {
 	tableCreateStatementList["SubscriptionList"] = sqlCreateSubscriptionListTable
 	tableCreateStatementList["SubscriptionScheduler"] = sqlCreateSubscriptionSchedulerTable
 	tableCreateStatementList["MessageList"] = sqlCreateMessageListTable
-	tableCreateStatementList["ClientsAssignedToTeams"] = sqlCreateClientsAssignedToTeamsTable
+	tableCreateStatementList["ClientsAssignedToTeams"] = sqlCreateClientTeamBoundTable
 
 	for currentTable, statement := range tableCreateStatementList {
 		Log.Debug(fmt.Sprintf("Processing '%+v' table", currentTable))
