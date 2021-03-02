@@ -54,7 +54,7 @@ create table MessageList (
 	ID integer not null primary key,
 	SocialMedia text not null,
 	ChatID text not null,
-	Text text not null,
+	MessageText text not null,
 	Created integer not null,
 	Sent integer
 );`
