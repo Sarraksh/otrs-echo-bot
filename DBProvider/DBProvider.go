@@ -21,4 +21,8 @@ type DBProvider interface {
 	SubscriptionListGetActiveByMultipleSubscription(subscriptionList []string) ([]uint64, error)
 	SubscriptionListAdd(userID uint64, newSubscription string) error
 	SubscriptionListRemove(userID uint64, removeSubscription string) error
+
+	ClientTeamBoundClientAdd(client, team string) error
+	ClientTeamBoundClientUpdate(client, team string) error
+	ClientTeamBoundGetTeamByClient(client string) (string, error)
 }
