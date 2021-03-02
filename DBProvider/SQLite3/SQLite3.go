@@ -150,6 +150,7 @@ func executeStatement(db *sql.DB, statement string) error {
 	if err != nil {
 		return err
 	}
+	defer transaction.Rollback()
 
 	preparedStatement, err := transaction.Prepare(statement)
 	if err != nil {

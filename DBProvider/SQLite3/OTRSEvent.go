@@ -31,9 +31,10 @@ func (db *DB) OTRSEventCreateNew(Channel, Type, TicketID string) error {
 	if err != nil {
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare and execute transaction for update row.
-	statement, err := transaction.Prepare(`insert into OTRSEventList(ID, Status, Channel, Type, TicketID, Created, ActivationInterval, NextActivation)
+	statement, err := transaction.Prepare(`INSERT INTO OTRSEventList(ID, Status, Channel, Type, TicketID, Created, ActivationInterval, NextActivation)
 values(?, ?, ?, ?, ?, ?, ?, ?)`,
 	)
 	if err != nil {
@@ -76,6 +77,7 @@ func (db *DB) OTRSEventGetActive() (int64, string, error) {
 	if err != nil {
 		return 0, "", err
 	}
+	defer transaction.Rollback()
 
 	// Prepare and execute transaction for update row.
 	statement, err := transaction.Prepare(
@@ -168,6 +170,7 @@ func (db *DB) OTRSEventSuspend(id int64) error {
 	if err != nil {
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare and execute transaction for update row.
 	statement, err := transaction.Prepare(`UPDATE OTRSEventList SET Status = 'Suspended', NextActivation = ? WHERE ID = ?;`)
@@ -200,6 +203,7 @@ func (db *DB) OTRSEventEnded(id int64) error {
 	if err != nil {
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare and execute transaction for update row.
 	statement, err := transaction.Prepare(`UPDATE OTRSEventList SET Status = 'Ended', Finished = ? WHERE ID = ?;`)

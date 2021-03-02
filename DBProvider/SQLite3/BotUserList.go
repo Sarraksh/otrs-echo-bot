@@ -75,6 +75,7 @@ func (db *DB) BotUserUpdateFirstName(tgID int64, firstName string) error {
 	if err != nil {
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare and execute transaction for update row.
 	statement, err := transaction.Prepare(`UPDATE BotUserList SET FirstName = ? WHERE ID = ?;`)
@@ -111,8 +112,9 @@ func (db *DB) BotUserUpdateLastName(tgID int64, lastName string) error {
 	if err != nil {
 		return err
 	}
+	defer transaction.Rollback()
 
-	// Prepare and execute transaction for update row.
+	// Prepare transaction for update row.
 	statement, err := transaction.Prepare(`UPDATE BotUserList SET LastName = ? WHERE ID = ?;`)
 	if err != nil {
 		return err

@@ -21,6 +21,7 @@ func (db *DB) ClientTeamBoundClientAdd(client, team string) error {
 		db.Log.Error(fmt.Sprintf("Can't create transaction for add new client '%v' with team '%v' - '%v'", client, team, err))
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for insert into table.
 	statement, err := transaction.Prepare(`INSERT INTO ClientTeamBound(Client, Team) VALUES(?, ?);`)
@@ -63,6 +64,7 @@ func (db *DB) ClientTeamBoundClientUpdate(client, team string) error {
 		db.Log.Error(fmt.Sprintf("Can't create transaction for update client '%v' with team '%v' - '%v'", client, team, err))
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for update table.
 	statement, err := transaction.Prepare(`UPDATE ClientTeamBound SET Team = ? WHERE Client = ?`)
@@ -101,6 +103,7 @@ func (db *DB) ClientTeamBoundGetTeamByClient(client string) (string, error) {
 		db.Log.Error(fmt.Sprintf("Can't create transaction for get team for client '%v' - '%v'", client, err))
 		return "", err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for select from table.
 	statement, err := transaction.Prepare(`SELECT Team FROM ClientTeamBound WHERE Client = ?;`)

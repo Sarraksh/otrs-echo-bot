@@ -16,6 +16,7 @@ func (db *DB) SubscriptionListGetActiveByUser(userID uint64) ([]string, error) {
 		db.Log.Error(fmt.Sprintf("Can't create transaction for scan subscriptions for user '%v' - '%v'", userID, err))
 		return nil, err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for select from table.
 	statement, err := transaction.Prepare(`SELECT Subscription FROM SubscriptionList WHERE UserID = ? AND Active = 1;`)
@@ -70,6 +71,7 @@ func (db *DB) SubscriptionListGetActiveBySubscription(subscription string) ([]ui
 		db.Log.Error(fmt.Sprintf("Can't create transaction for scan users by subscription '%v' - '%v'", subscription, err))
 		return nil, err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for select from table.
 	statement, err := transaction.Prepare(`SELECT UserID FROM SubscriptionList WHERE Subscription = ? AND Active = 1;`)
@@ -168,6 +170,7 @@ func (db *DB) SubscriptionListAdd(userID uint64, newSubscription string) error {
 			newSubscription, userID, err))
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for add new subscription.
 	statement, err := transaction.Prepare(`INSERT INTO SubscriptionList(Active, Subscription, UserID, Created) VALUES(?, ?, ?, ?);`)
@@ -223,6 +226,7 @@ func (db *DB) SubscriptionListRemove(userID uint64, removeSubscription string) e
 			removeSubscription, userID, err))
 		return err
 	}
+	defer transaction.Rollback()
 
 	// Prepare transaction for remove subscription.
 	statement, err := transaction.Prepare(`UPDATE SubscriptionList SET Active = 0, Finished = ?
