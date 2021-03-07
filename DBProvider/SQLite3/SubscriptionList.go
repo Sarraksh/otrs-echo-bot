@@ -8,7 +8,7 @@ import (
 
 // Return all active subscriptions for provided user.
 // If user have no subscriptions return empty slice.
-func (db *DB) SubscriptionListGetActiveByUser(userID uint64) ([]string, error) {
+func (db *DB) SubscriptionListGetActiveByUser(userID int64) ([]string, error) {
 	db.Log.Debug(fmt.Sprintf("Collect subscription list by user '%+v'", userID))
 	// Create new sql transaction.
 	transaction, err := db.Instance.Begin()
@@ -63,7 +63,7 @@ func (db *DB) SubscriptionListGetActiveByUser(userID uint64) ([]string, error) {
 }
 
 // Return list of users with active provided subscription name.
-func (db *DB) SubscriptionListGetActiveBySubscription(subscription string) ([]uint64, error) {
+func (db *DB) SubscriptionListGetActiveBySubscription(subscription string) ([]int64, error) {
 	db.Log.Debug(fmt.Sprintf("Collect users by subscription '%+v'", subscription))
 	// Create new sql transaction.
 	transaction, err := db.Instance.Begin()
@@ -90,8 +90,8 @@ func (db *DB) SubscriptionListGetActiveBySubscription(subscription string) ([]ui
 	defer rows.Close()
 
 	// Check query result.
-	var userList = make([]uint64, 0, 32)
-	var user uint64
+	var userList = make([]int64, 0, 32)
+	var user int64
 	for rows.Next() {
 		err = rows.Scan(&user)
 		if err != nil {
@@ -118,10 +118,10 @@ func (db *DB) SubscriptionListGetActiveBySubscription(subscription string) ([]ui
 }
 
 // Collect all users for all subscriptions and remove duplicates.
-func (db *DB) SubscriptionListGetActiveByMultipleSubscription(subscriptionList []string) ([]uint64, error) {
+func (db *DB) SubscriptionListGetActiveByMultipleSubscription(subscriptionList []string) ([]int64, error) {
 	db.Log.Debug(fmt.Sprintf("Collect users by subscriptions '%+v'", subscriptionList))
 	// Collect all users for all subscriptions.
-	var userList = make([]uint64, 0, 128)
+	var userList = make([]int64, 0, 128)
 	for _, subscription := range subscriptionList {
 		tmpUserList, err := db.SubscriptionListGetActiveBySubscription(subscription)
 		if err != nil {
@@ -131,7 +131,7 @@ func (db *DB) SubscriptionListGetActiveByMultipleSubscription(subscriptionList [
 	}
 
 	// Remove duplicate users.
-	var presentMap = make(map[uint64]bool)
+	var presentMap = make(map[int64]bool)
 	userCount := len(userList)
 	for i := 0; i < userCount; {
 		if presentMap[userList[i]] {
@@ -149,7 +149,7 @@ func (db *DB) SubscriptionListGetActiveByMultipleSubscription(subscriptionList [
 }
 
 // Add new subscription for user if not already subscribed.
-func (db *DB) SubscriptionListAdd(userID uint64, newSubscription string) error {
+func (db *DB) SubscriptionListAdd(userID int64, newSubscription string) error {
 	db.Log.Debug(fmt.Sprintf("Add subscription '%+v' for user '%+v'", newSubscription, userID))
 	// Check if user already subscribed and return ErrAlreadySubscribed if so.
 	activeSubscriptionList, err := db.SubscriptionListGetActiveByUser(userID)
@@ -202,7 +202,7 @@ func (db *DB) SubscriptionListAdd(userID uint64, newSubscription string) error {
 }
 
 // Unsubscribe user if he currently subscribed.
-func (db *DB) SubscriptionListRemove(userID uint64, removeSubscription string) error {
+func (db *DB) SubscriptionListRemove(userID int64, removeSubscription string) error {
 	db.Log.Debug(fmt.Sprintf("Remove subscription '%+v' for user '%+v'", removeSubscription, userID))
 	// Check if user subscribed. If not, return ErrNotSubscribed.
 	activeSubscriptionList, err := db.SubscriptionListGetActiveByUser(userID)

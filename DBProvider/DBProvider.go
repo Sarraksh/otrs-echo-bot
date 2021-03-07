@@ -16,11 +16,11 @@ type DBProvider interface {
 	BotUserUpdateLastName(tgID int64, lastName string) error
 	BotUserGetByTelegramID(tgID int64) (int64, error)
 
-	SubscriptionListGetActiveByUser(userID uint64) ([]string, error)
-	SubscriptionListGetActiveBySubscription(subscription string) ([]uint64, error)
-	SubscriptionListGetActiveByMultipleSubscription(subscriptionList []string) ([]uint64, error)
-	SubscriptionListAdd(userID uint64, newSubscription string) error
-	SubscriptionListRemove(userID uint64, removeSubscription string) error
+	SubscriptionListGetActiveByUser(userID int64) ([]string, error)
+	SubscriptionListGetActiveBySubscription(subscription string) ([]int64, error)
+	SubscriptionListGetActiveByMultipleSubscription(subscriptionList []string) ([]int64, error)
+	SubscriptionListAdd(userID int64, newSubscription string) error
+	SubscriptionListRemove(userID int64, removeSubscription string) error
 
 	ClientTeamBoundClientAdd(client, team string) error
 	ClientTeamBoundClientUpdate(client, team string) error
