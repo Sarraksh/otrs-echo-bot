@@ -89,7 +89,6 @@ func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 		return
 	}
 
-	// TODO - represent each case as a function
 	// Process all provided commands.
 	for _, command := range commandList {
 		bot.Log.Debug(fmt.Sprintf("Received command '%v' in message '%v'", command.Name, message.Text))
@@ -97,19 +96,9 @@ func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 		case "help":
 			sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, helpCommandResponse, bot.Log)
 		case "firstName":
-			log.Printf("'%v' command received. Change FirstName", command)
-			err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
-			if err != nil {
-				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
-				sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidFirstNameResponse, bot.Log)
-			}
+			commandFirstName(bot, message, command)
 		case "lastName":
-			log.Printf("'%v' command received. Change LastName", command)
-			err := updateLastName(bot.DB, command, message.Text, message.Chat.ID)
-			if err != nil {
-				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
-				sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidLastNameResponse, bot.Log)
-			}
+			commandLastName(bot, message, command)
 		case "start":
 			commandStart(bot, message)
 		case "subscribeTeam1", "subscribeTeam2", "subscribeTeam3":
@@ -188,6 +177,26 @@ func getNameFromCommandArgument(text string, commandOffset, commandLength uint64
 	}
 
 	return argument, nil
+}
+
+// Logic for /firstName command.
+func commandFirstName(bot TelegramModule, message tgbotapi.Message, command Command) {
+	bot.Log.Debug(fmt.Sprintf("'%v' command received. Change FirstName", command))
+	err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
+	if err != nil {
+		bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidFirstNameResponse, bot.Log)
+	}
+}
+
+// Logic for /lastName command.
+func commandLastName(bot TelegramModule, message tgbotapi.Message, command Command) {
+	log.Printf("'%v' command received. Change LastName", command)
+	err := updateLastName(bot.DB, command, message.Text, message.Chat.ID)
+	if err != nil {
+		bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidLastNameResponse, bot.Log)
+	}
 }
 
 // Validate argument for /firstName command and write it into DB if valid.
