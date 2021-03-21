@@ -15,6 +15,7 @@ var ErrNotSubscribed = errors.New("not subscribed")
 var ErrClientNotExists = errors.New("client not exists")
 var ErrNoTeamBounded = errors.New("no team bounded")
 var ErrMoreThenOneTeamBounded = errors.New("more then one team bounded")
+var ErrUserAlreadyExists = errors.New("user already exists")
 
 // TelegramProvider
 var ErrArgumentNotProvided = errors.New("argument not provided")

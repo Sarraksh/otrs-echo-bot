@@ -10,6 +10,15 @@ import (
 func (db *DB) BotUserAdd(tgID int64) error {
 	db.Log.Info(fmt.Sprintf("Write new user with telegram ID '%+v'", tgID))
 
+	// Check if user already exists
+	_, err := db.BotUserGetByTelegramID(tgID)
+	switch {
+	case err == nil:
+		return errors.ErrUserAlreadyExists
+	case err != errors.ErrNoUsersFound:
+		return err
+	}
+
 	// Prepare data for insert.
 	db.LastIDmx.Lock()
 	userID := db.LastID.BotUserList + 1
