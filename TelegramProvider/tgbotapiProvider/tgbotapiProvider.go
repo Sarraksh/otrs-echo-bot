@@ -84,7 +84,8 @@ func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 
 	// If no commands received stop message processing.
 	if len(commandList) == 0 {
-		// TODO - add response to user with help message
+		bot.Log.Debug(fmt.Sprintf("Received no command in message '%v'", message.Text))
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, noCommandInMessage, bot.Log)
 		return
 	}
 

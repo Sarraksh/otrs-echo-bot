@@ -1,8 +1,11 @@
 package tgbotapiProvider
 
 const (
-	invalidCommandResponse string = `Неверная команда. Для отображения списка команд используйте /help .`
-	helpCommandResponse    string = `Список доступных команд:
+	invalidCommandResponse string = `Неверная команда.
+Для отображения списка команд используйте /help .`
+	noCommandInMessage string = `Команда должна начинаться символом "/".
+Для отображения списка команд используйте /help .`
+	helpCommandResponse string = `Список доступных команд:
 
 Управление подписками на события
 /subscribeTeam1
