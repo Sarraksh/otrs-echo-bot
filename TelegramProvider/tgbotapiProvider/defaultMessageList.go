@@ -34,4 +34,10 @@ const (
 /lastName Фамилия`
 	invalidFirstNameResponse string = `Имя должно содержать только русские буквы.`
 	invalidLastNameResponse  string = `Фамилия должна содержать только русские буквы.`
+	errorWileSubscribe       string = `Ошибка при оформлении подписки.
+Пожалуйста попробуйте ещё раз или посмотрите лог.`
+	errorWileUnsubscribe string = `Ошибка при отмене подписки.
+Пожалуйста попробуйте ещё раз или посмотрите лог.`
+	successfulSubscribe   string = `Подписка успешно оформлена.`
+	successfulUnsubscribe string = `Подписка успешно отменена.`
 )

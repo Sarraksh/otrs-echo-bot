@@ -88,45 +88,35 @@ func messageProcessor(bot TelegramModule, message tgbotapi.Message) {
 		return
 	}
 
+	// TODO - represent each case as a function
 	// Process all provided commands.
 	for _, command := range commandList {
 		bot.Log.Debug(fmt.Sprintf("Received command '%v' in message '%v'", command.Name, message.Text))
 		switch command.Name {
 		case "help":
-			err := sendPlainTextMessage(bot.bot, message.Chat.ID, helpCommandResponse)
-			if err != nil {
-				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
-			}
+			sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, helpCommandResponse, bot.Log)
 		case "firstName":
 			log.Printf("'%v' command received. Change FirstName", command)
 			err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
 			if err != nil {
 				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
-				err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidFirstNameResponse)
-				if err != nil {
-					bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
-				}
+				sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidFirstNameResponse, bot.Log)
 			}
 		case "lastName":
 			log.Printf("'%v' command received. Change LastName", command)
 			err := updateLastName(bot.DB, command, message.Text, message.Chat.ID)
 			if err != nil {
 				bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
-				err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidLastNameResponse)
-				if err != nil {
-					bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
-				}
+				sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidLastNameResponse, bot.Log)
 			}
 		case "start":
-			err := sendPlainTextMessage(bot.bot, message.Chat.ID, startCommandResponse)
-			if err != nil {
-				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
-			}
+			commandStart(bot, message)
+		case "subscribeTeam1", "subscribeTeam2", "subscribeTeam3":
+			commandSubscribe(bot, message, command)
+		case "unsubscribeTeam1", "unsubscribeTeam2", "unsubscribeTeam3":
+			commandUnsubscribe(bot, message, command)
 		default:
-			err := sendPlainTextMessage(bot.bot, message.Chat.ID, invalidCommandResponse)
-			if err != nil {
-				bot.Log.Error(fmt.Sprintf("Can't sent message - '%v'", err))
-			}
+			sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidCommandResponse, bot.Log)
 		}
 	}
 }
@@ -162,6 +152,14 @@ func sendPlainTextMessage(bot *tgbotapi.BotAPI, chatID int64, text string) error
 	msg := tgbotapi.NewMessage(chatID, text)
 	_, err := bot.Send(msg)
 	return err
+}
+
+// Send simple text message into provided chat and log error if occurred.
+func sendPlainTextMessageLogErr(bot *tgbotapi.BotAPI, chatID int64, text string, Log logger.Logger) {
+	err := sendPlainTextMessage(bot, chatID, text)
+	if err != nil {
+		Log.Error(fmt.Sprintf("Can't send message - '%v'", err))
+	}
 }
 
 // Get russian name from argument.
@@ -219,4 +217,61 @@ func updateLastName(db DBProvider.DBProvider, command Command, text string, tele
 	}
 
 	return nil
+}
+
+// Logic for /subscribe* commands.
+func commandSubscribe(bot TelegramModule, message tgbotapi.Message, command Command) {
+	DBUserID, err := bot.DB.BotUserGetByTelegramID(message.Chat.ID)
+	switch {
+	case err == errors.ErrNoUsersFound:
+		// If user not found use "start" command behavior.
+		commandStart(bot, message)
+	case err != nil:
+		bot.Log.Error(fmt.Sprintf("while subsscribe user with telegram ID '%v' for '%v' - '%v'",
+			message.Chat.ID, command.Name, err))
+	}
+
+	// Save subscription and response to user with result.
+	err = bot.DB.SubscriptionListAdd(DBUserID, command.Name[9:])
+	if err != nil {
+		bot.Log.Error(fmt.Sprintf("while subsscribe user with telegram ID '%v' for '%v' - '%v'",
+			message.Chat.ID, command.Name, err))
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, errorWileSubscribe, bot.Log)
+	} else {
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, successfulSubscribe, bot.Log)
+	}
+}
+
+// Logic for /unsubscribe* commands.
+func commandUnsubscribe(bot TelegramModule, message tgbotapi.Message, command Command) {
+	DBUserID, err := bot.DB.BotUserGetByTelegramID(message.Chat.ID)
+	switch {
+	case err == errors.ErrNoUsersFound:
+		// If user not found use "start" command behavior.
+		commandStart(bot, message)
+	case err != nil:
+		bot.Log.Error(fmt.Sprintf("while unsubsscribe user with telegram ID '%v' for '%v' - '%v'",
+			message.Chat.ID, command.Name, err))
+	}
+
+	// Remove subscription and response to user with result.
+	err = bot.DB.SubscriptionListRemove(DBUserID, command.Name[11:])
+	if err != nil {
+		bot.Log.Error(fmt.Sprintf("while unsubsscribe user with telegram ID '%v' for '%v' - '%v'",
+			message.Chat.ID, command.Name, err))
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, errorWileUnsubscribe, bot.Log)
+	} else {
+		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, successfulUnsubscribe, bot.Log)
+	}
+}
+
+// Logic for /start command.
+func commandStart(bot TelegramModule, message tgbotapi.Message) {
+	sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, startCommandResponse, bot.Log)
+
+	err := bot.DB.BotUserAdd(message.Chat.ID)
+	if err != nil && err != errors.ErrNoUsersFound {
+		// TODO - add exit program with error
+		bot.Log.Error(fmt.Sprintf("Can't create new user - '%v'", err))
+	}
 }
