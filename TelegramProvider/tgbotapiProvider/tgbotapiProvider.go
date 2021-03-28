@@ -17,7 +17,7 @@ const ModuleName = "TelegramProviderTgBotApi"
 type TelegramModule struct {
 	bot *tgbotapi.BotAPI
 	Log logger.Logger
-	DB  DBProvider.DBProvider
+	DB  *DBProvider.DBProvider
 }
 
 // Contain command name and offset.
@@ -49,7 +49,7 @@ func New(logger logger.Logger, botToken string) (TelegramModule, error) {
 }
 
 // Set DBProvider.
-func (bot TelegramModule) SetDBProvider(db DBProvider.DBProvider) TelegramModule {
+func (bot TelegramModule) SetDBProvider(db *DBProvider.DBProvider) TelegramModule {
 	bot.DB = db
 	return bot
 }
@@ -182,7 +182,8 @@ func getNameFromCommandArgument(text string, commandOffset, commandLength uint64
 // Logic for /firstName command.
 func commandFirstName(bot TelegramModule, message tgbotapi.Message, command Command) {
 	bot.Log.Debug(fmt.Sprintf("'%v' command received. Change FirstName", command))
-	err := updateFirstName(bot.DB, command, message.Text, message.Chat.ID)
+	db := *bot.DB
+	err := updateFirstName(db, command, message.Text, message.Chat.ID)
 	if err != nil {
 		bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
 		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidFirstNameResponse, bot.Log)
@@ -192,7 +193,8 @@ func commandFirstName(bot TelegramModule, message tgbotapi.Message, command Comm
 // Logic for /lastName command.
 func commandLastName(bot TelegramModule, message tgbotapi.Message, command Command) {
 	log.Printf("'%v' command received. Change LastName", command)
-	err := updateLastName(bot.DB, command, message.Text, message.Chat.ID)
+	db := *bot.DB
+	err := updateLastName(db, command, message.Text, message.Chat.ID)
 	if err != nil {
 		bot.Log.Error(fmt.Sprintf("Can't update FirstName - '%v'", err))
 		sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, invalidLastNameResponse, bot.Log)
@@ -231,7 +233,8 @@ func updateLastName(db DBProvider.DBProvider, command Command, text string, tele
 
 // Logic for /subscribe* commands.
 func commandSubscribe(bot TelegramModule, message tgbotapi.Message, command Command) {
-	DBUserID, err := bot.DB.BotUserGetByTelegramID(message.Chat.ID)
+	db := *bot.DB
+	DBUserID, err := db.BotUserGetByTelegramID(message.Chat.ID)
 	switch {
 	case err == errors.ErrNoUsersFound:
 		// If user not found use "start" command behavior.
@@ -242,7 +245,7 @@ func commandSubscribe(bot TelegramModule, message tgbotapi.Message, command Comm
 	}
 
 	// Save subscription and response to user with result.
-	err = bot.DB.SubscriptionListAdd(DBUserID, command.Name[9:])
+	err = db.SubscriptionListAdd(DBUserID, command.Name[9:])
 	if err != nil {
 		bot.Log.Error(fmt.Sprintf("while subsscribe user with telegram ID '%v' for '%v' - '%v'",
 			message.Chat.ID, command.Name, err))
@@ -254,7 +257,8 @@ func commandSubscribe(bot TelegramModule, message tgbotapi.Message, command Comm
 
 // Logic for /unsubscribe* commands.
 func commandUnsubscribe(bot TelegramModule, message tgbotapi.Message, command Command) {
-	DBUserID, err := bot.DB.BotUserGetByTelegramID(message.Chat.ID)
+	db := *bot.DB
+	DBUserID, err := db.BotUserGetByTelegramID(message.Chat.ID)
 	switch {
 	case err == errors.ErrNoUsersFound:
 		// If user not found use "start" command behavior.
@@ -265,7 +269,7 @@ func commandUnsubscribe(bot TelegramModule, message tgbotapi.Message, command Co
 	}
 
 	// Remove subscription and response to user with result.
-	err = bot.DB.SubscriptionListRemove(DBUserID, command.Name[11:])
+	err = db.SubscriptionListRemove(DBUserID, command.Name[11:])
 	if err != nil {
 		bot.Log.Error(fmt.Sprintf("while unsubsscribe user with telegram ID '%v' for '%v' - '%v'",
 			message.Chat.ID, command.Name, err))
@@ -279,7 +283,8 @@ func commandUnsubscribe(bot TelegramModule, message tgbotapi.Message, command Co
 func commandStart(bot TelegramModule, message tgbotapi.Message) {
 	sendPlainTextMessageLogErr(bot.bot, message.Chat.ID, startCommandResponse, bot.Log)
 
-	err := bot.DB.BotUserAdd(message.Chat.ID)
+	db := *bot.DB
+	err := db.BotUserAdd(message.Chat.ID)
 	if err != nil && err != errors.ErrNoUsersFound {
 		// TODO - add exit program with error
 		bot.Log.Error(fmt.Sprintf("Can't create new user - '%v'", err))
