@@ -26,26 +26,27 @@ type Command struct {
 	Offset uint64 // First command character (after slash) in message text.
 }
 
-// Create telegram bot.
-// Add created bot and provided logger into provider and return it.
-func New(logger logger.Logger, botToken string) (TelegramModule, error) {
+// Initialise telegram bot.
+// Add created bot and provided logger into provider.
+func (bot TelegramModule) Initialise(logger logger.Logger, botToken string) error {
 	logger = logger.SetModuleName(ModuleName)
 	logger.Debug("Initialisation started")
-	bot, err := tgbotapi.NewBotAPI(botToken)
+	newBot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Initialisation failed - '%v'", err))
-		return TelegramModule{}, err
+		return err
 	}
 
+	// TODO - add option for enable internal bot debug
 	// Enable bot library debug messages.
 	//bot.bot.Debug = true
 
-	logger.Debug(fmt.Sprintf("Authorized on account %s", bot.Self.UserName))
+	logger.Debug(fmt.Sprintf("Authorized on account %s", newBot.Self.UserName))
 	logger.Debug("Initialisation complete")
-	return TelegramModule{
-		bot: bot,
-		Log: logger,
-	}, nil
+
+	bot.bot = newBot
+	bot.Log = logger
+	return nil
 }
 
 // Set DBProvider.
