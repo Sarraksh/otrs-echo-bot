@@ -3,13 +3,12 @@ package SQLite3
 import (
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/common/errors"
-	"strconv"
 	"time"
 )
 
 // Create new OTRS event in database.
 // Increment LastID.OTRSEventList even if error occurred,
-func (db *DB) OTRSEventCreateNew(Channel, Type, TicketID string) error {
+func (db *DB) OTRSEventCreateNew(Channel, Type string, TicketID int64) error {
 	db.Log.Info(fmt.Sprintf("Write new OTRS event with type '%+v' and ticket ID '%+v'", Type, TicketID))
 
 	// Prepare data for insert.
@@ -18,11 +17,6 @@ func (db *DB) OTRSEventCreateNew(Channel, Type, TicketID string) error {
 	db.LastID.OTRSEventList = ID
 	db.LastIDmx.Unlock()
 	Status := "New"
-	TicketIDint, err := strconv.Atoi(TicketID)
-	if err != nil {
-		db.Log.Error(fmt.Sprintf("Can't create new OTRS event - '%v'", err))
-		return err
-	}
 	Created := time.Now().Unix()
 	NextActivation := Created + DefaultActivationInterval
 
@@ -48,7 +42,7 @@ values(?, ?, ?, ?, ?, ?, ?, ?)`,
 		Status,
 		Channel,
 		Type,
-		TicketIDint,
+		TicketID,
 		Created,
 		DefaultActivationInterval,
 		NextActivation,

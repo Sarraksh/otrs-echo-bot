@@ -5,7 +5,7 @@ import "github.com/Sarraksh/otrs-echo-bot/common/logger"
 type DBProvider interface {
 	Initialise(logger logger.Logger, directory string) error
 
-	OTRSEventCreateNew(Channel, Type, TicketID string) error
+	OTRSEventCreateNew(Channel, Type string, TicketID int64) error
 	OTRSEventGetActive() (int64, string, error)
 	OTRSEventGetEarliestActivationTimestamp() (int64, error)
 	OTRSEventSuspend(id int64) error
