@@ -226,3 +226,57 @@ func (db *DB) OTRSEventEnded(id int64) error {
 
 	return nil
 }
+
+// Return true if event with given ticket ID and type exists.
+func (db *DB) OTRSEventIsExistsWithTicketIDAndType(ticketID int64, eventType string) (bool, error) {
+	db.Log.Error(fmt.Sprintf("Check existense for event with type '%+v' and OTRS ID '%+v'", eventType, ticketID))
+
+	// Create new sql transaction.
+	transaction, err := db.Instance.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer transaction.Rollback()
+
+	// Prepare and execute transaction for update row.
+	statement, err := transaction.Prepare(`SELECT ID from OTRSEventList WHERE TicketID = ? and Type = ?;`)
+	if err != nil {
+		return false, err
+	}
+	defer statement.Close()
+
+	// Query provided table for last ID.
+	rows, err := statement.Query(ticketID, eventType)
+	if err != nil {
+		return false, err
+	}
+
+	// Check query result.
+	var ID int64 = 0
+	for rows.Next() {
+		err = rows.Scan(&ID)
+		if err != nil {
+			db.Log.Error(fmt.Sprintf("Can't check existense for event with type '%+v' and OTRS ID '%+v'", eventType, ticketID))
+			return false, err
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("While iteration for check existense event with type '%+v' and OTRS ID '%+v'", eventType, ticketID))
+		return false, err
+	}
+	defer rows.Close()
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
+		return false, err
+	}
+
+	// Check if no one row received.
+	if ID == 0 {
+		return false, nil
+	}
+
+	return true, nil
+}

@@ -10,6 +10,7 @@ type DBProvider interface {
 	OTRSEventGetEarliestActivationTimestamp() (int64, error)
 	OTRSEventSuspend(id int64) error
 	OTRSEventEnded(id int64) error
+	OTRSEventIsExistsWithTicketIDAndType(ticketID int64, eventType string) (bool, error)
 
 	BotUserAdd(tgID int64) error
 	BotUserUpdateFirstName(tgID int64, firstName string) error
