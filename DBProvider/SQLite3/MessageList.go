@@ -6,7 +6,7 @@ import (
 )
 
 // Add new message. Return message ID in DB.
-func (db *DB) MessageListNewMessage(sm, chatID, text string) (int64, error) {
+func (db *DB) MessageListNewMessage(sm string, chatID int64, text string) (int64, error) {
 	db.Log.Debug(fmt.Sprintf("Add new message for chat '%v' in '%v'. Text - '%v'", chatID, sm, text))
 
 	// Prepare data for insert.

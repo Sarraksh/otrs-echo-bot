@@ -30,7 +30,7 @@ type DBProvider interface {
 	ClientTeamBoundClientUpdate(client, team string) error
 	ClientTeamBoundGetTeamByClient(client string) (string, error)
 
-	MessageListNewMessage(sm, chatID, text string) (int64, error)
+	MessageListNewMessage(sm string, chatID int64, text string) (int64, error)
 	MessageListMarkDelivered(ID int64) error
 	MessageListGetAllUndeliveredBySM(sm string) ([]int64, error)
 	MessageListGetMessageText(ID int64) (string, error)
