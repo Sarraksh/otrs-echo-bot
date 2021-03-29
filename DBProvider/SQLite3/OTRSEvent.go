@@ -274,3 +274,57 @@ func (db *DB) OTRSEventIsExistsWithTicketIDAndType(ticketID int64, eventType str
 
 	return true, nil
 }
+
+// Get status for event by DBID.
+func (db *DB) OTRSEventGetStatus(DBID int64) (string, error) {
+	db.Log.Error(fmt.Sprintf("Check status for event with with DBID '%+v'", DBID))
+
+	// Create new sql transaction.
+	transaction, err := db.Instance.Begin()
+	if err != nil {
+		return "", err
+	}
+	defer transaction.Rollback()
+
+	// Prepare and execute transaction for update row.
+	statement, err := transaction.Prepare(`SELECT status from OTRSEventList WHERE ID = ?;`)
+	if err != nil {
+		return "", err
+	}
+	defer statement.Close()
+
+	// Query provided table event status.
+	rows, err := statement.Query(DBID)
+	if err != nil {
+		return "", err
+	}
+
+	// Check query result.
+	var status string = ""
+	for rows.Next() {
+		err = rows.Scan(&status)
+		if err != nil {
+			db.Log.Error(fmt.Sprintf("Can't tatus for event with with DBID '%+v'", DBID))
+			return "", err
+		}
+	}
+	err = rows.Err()
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("While iteration for check tatus for event with with DBID '%+v'", DBID))
+		return "", err
+	}
+	defer rows.Close()
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
+		return "", err
+	}
+
+	// Check if no one row received.
+	if status == "" {
+		return "", err
+	}
+
+	return status, nil
+}

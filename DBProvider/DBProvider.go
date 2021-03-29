@@ -11,6 +11,7 @@ type DBProvider interface {
 	OTRSEventSuspend(id int64) error
 	OTRSEventEnded(id int64) error
 	OTRSEventIsExistsWithTicketIDAndType(ticketID int64, eventType string) (bool, error)
+	OTRSEventGetStatus(DBID int64) (string, error)
 
 	BotUserAdd(tgID int64) error
 	BotUserUpdateFirstName(tgID int64, firstName string) error
