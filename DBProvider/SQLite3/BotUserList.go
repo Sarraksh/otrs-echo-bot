@@ -183,3 +183,63 @@ func (db *DB) BotUserGetByTelegramID(tgID int64) (int64, error) {
 
 	return userID, nil
 }
+
+func (db *DB) BotUserGetTelegramIDByID(ID int64) (int64, error) {
+	db.Log.Debug(fmt.Sprintf("Get TelegramID for user with ID '%+v'", ID))
+
+	// Create new sql transaction.
+	sqlTransaction, err := db.Instance.Begin()
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("Can't create transaction for get TelegramID by user with ID '%v' - '%v'", ID, err))
+		return 0, err
+	}
+
+	// Prepare and execute transaction for get TelegramID.
+	statement, err := sqlTransaction.Prepare(`Select TelegramID from BotUserList where ID = ?`)
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("Can't prepare transaction for get TelegramID by user with ID '%v' - '%v'", ID, err))
+		return 0, err
+	}
+	defer statement.Close()
+
+	// Query TelegramID.
+	rows, err := statement.Query(ID)
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("Can't query for get TelegramID by user with ID '%v' - '%v'", ID, err))
+		return 0, err
+	}
+	defer rows.Close()
+
+	// Check query result.
+	var telegramID int64 = 0
+	rowNumber := 0
+	for rows.Next() {
+		err = rows.Scan(&telegramID)
+		if err != nil {
+			db.Log.Error(fmt.Sprintf("Can't scan TelegramID for user with ID '%v' - '%v'", ID, err))
+			return 0, err
+		}
+		rowNumber++
+	}
+	err = rows.Err()
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("While iteration for get TelegramID by user with ID '%v' - '%v'", ID, err))
+		return 0, err
+	}
+
+	// Check if more than one row or no raws received.
+	switch {
+	case rowNumber > 1:
+		return telegramID, errors.ErrMoreThanOneUser
+	case rowNumber == 0:
+		return 0, errors.ErrNoUsersFound
+	}
+
+	// Close transaction.
+	err = sqlTransaction.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return telegramID, nil
+}

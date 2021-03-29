@@ -18,6 +18,7 @@ type DBProvider interface {
 	BotUserUpdateFirstName(tgID int64, firstName string) error
 	BotUserUpdateLastName(tgID int64, lastName string) error
 	BotUserGetByTelegramID(tgID int64) (int64, error)
+	BotUserGetTelegramIDByID(ID int64) (int64, error)
 
 	SubscriptionListGetActiveByUser(userID int64) ([]string, error)
 	SubscriptionListGetActiveBySubscription(subscription string) ([]int64, error)
