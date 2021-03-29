@@ -23,6 +23,10 @@ func (cl CLILogger) Error(message string) {
 	log.Println(formatString("ERROR", cl.Module, message))
 }
 
+func (cl CLILogger) Warning(message string) {
+	log.Println(formatString("WARN", cl.Module, message))
+}
+
 func (cl CLILogger) Info(message string) {
 	log.Println(formatString("INFO", cl.Module, message))
 }

@@ -4,6 +4,7 @@ package logger
 type Logger interface {
 	SetModuleName(name string) Logger
 	Error(message string)
+	Warning(message string)
 	Info(message string)
 	Debug(message string)
 }

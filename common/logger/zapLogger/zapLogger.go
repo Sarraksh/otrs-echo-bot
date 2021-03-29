@@ -77,6 +77,11 @@ func (zl ZapLogger) Error(message string) {
 	zl.Logger.Error(formattedMessage)
 }
 
+func (zl ZapLogger) Warning(message string) {
+	formattedMessage := formatString(zl.Module, message)
+	zl.Logger.Warn(formattedMessage)
+}
+
 func (zl ZapLogger) Info(message string) {
 	formattedMessage := formatString(zl.Module, message)
 	zl.Logger.Info(formattedMessage)
