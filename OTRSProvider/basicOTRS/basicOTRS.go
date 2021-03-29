@@ -11,14 +11,18 @@ import (
 )
 
 type BasicOTRS struct {
-	URLFormat  string
-	HTTPClient *http.Client
-	Log        logger.Logger
+	URLFormat       string
+	HTTPClient      *http.Client
+	Log             logger.Logger
+	Endpoint        string
+	TicketURLPrefix string
 }
 
-func New(logger logger.Logger) BasicOTRS {
+func (bo *BasicOTRS) Initialisation(endpoint, URLPrefix string, logger logger.Logger) {
 	logger.SetModuleName("OTRSProvider")
-	return BasicOTRS{Log: logger}
+	bo.Log = logger
+	bo.Endpoint = endpoint
+	bo.TicketURLPrefix = URLPrefix
 }
 
 // Initialise transport and set behavior for insecure connections.
@@ -33,8 +37,8 @@ func (bo *BasicOTRS) SetTransport(InsecureConnection bool) {
 
 // Set protocol, URL and credentials for OTRS instance and store as format fo fmt.Sprintf .
 func (bo *BasicOTRS) SetURLFormat(protocol, URL, login, password string) {
-	bo.URLFormat = urlFormat(protocol, URL, login, password)
-	maskedURLString := urlFormat(protocol, URL, `*********`, `*********`)
+	bo.URLFormat = urlFormat(protocol, URL, bo.Endpoint, login, password)
+	maskedURLString := urlFormat(protocol, URL, bo.Endpoint, `*********`, `*********`)
 	bo.Log.Debug(fmt.Sprintf("Set URLFormat - '%v'", maskedURLString))
 }
 
@@ -61,15 +65,17 @@ func (bo *BasicOTRS) GetTicketDetails(ticketID string) (OTRSProvider.TicketOTRS,
 		return OTRSProvider.TicketOTRS{}, err // TODO - make less sensitive for errors
 	}
 
-	return ticketsFromJSON.Ticket[0], nil
+	ticketDetails := ticketsFromJSON.Ticket[0]
+	ticketDetails.URL = fmt.Sprint(bo.TicketURLPrefix, ticketID)
+	return ticketDetails, nil
 }
 
-func urlFormat(protocol, URL, login, password string) string {
+func urlFormat(protocol, URL, endpoint, login, password string) string {
 	return fmt.Sprint(
 		protocol,
 		`://`,
 		URL,
-		`/otrs/nph-genericinterface.pl/Webservice/GenericTicketConnectorREST/TicketGet/`,
+		endpoint,
 		`%s`,
 		`?UserLogin=`,
 		login,

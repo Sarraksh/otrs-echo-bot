@@ -1,6 +1,9 @@
 package OTRSProvider
 
+import "github.com/Sarraksh/otrs-echo-bot/common/logger"
+
 type OTRSProvider interface {
+	Initialisation(endpoint, URLPrefix string, logger logger.Logger)
 	SetTransport(InsecureConnection bool)
 	SetURLFormat(protocol, URL, login, password string)
 	GetTicketDetails(ticketID string) (TicketOTRS, error)
@@ -21,4 +24,5 @@ type TicketOTRS struct {
 	Title        string `json:"Title"`        // It is returned in the field of the same name from OTRS.
 	Lock         string `json:"Lock"`         // It is returned in the field of the same name from OTRS.
 	StateType    string `json:"StateType"`    // It is returned in the field of the same name from OTRS.
+	URL          string // For formatted message.
 }
