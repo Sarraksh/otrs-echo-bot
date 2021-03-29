@@ -27,8 +27,8 @@ type Command struct {
 }
 
 // Initialise telegram bot.
-// Add created bot and provided logger into provider.
-func (bot TelegramModule) Initialise(logger logger.Logger, botToken string) error {
+// Add created bot and provided logger and DB modules into provider.
+func (bot *TelegramModule) Initialise(botToken string, logger logger.Logger, db *DBProvider.DBProvider) error {
 	logger = logger.SetModuleName(ModuleName)
 	logger.Debug("Initialisation started")
 	newBot, err := tgbotapi.NewBotAPI(botToken)
@@ -46,17 +46,12 @@ func (bot TelegramModule) Initialise(logger logger.Logger, botToken string) erro
 
 	bot.bot = newBot
 	bot.Log = logger
+	bot.DB = db
 	return nil
 }
 
-// Set DBProvider.
-func (bot TelegramModule) SetDBProvider(db *DBProvider.DBProvider) TelegramModule {
-	bot.DB = db
-	return bot
-}
-
 // Listener for Telegram API updates with context control.
-func (bot TelegramModule) UpdateListener(ctx context.Context, cancel context.CancelFunc) error {
+func (bot *TelegramModule) UpdateListener(ctx context.Context, cancel context.CancelFunc) error {
 	// Initialise API listener.
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -71,12 +66,16 @@ func (bot TelegramModule) UpdateListener(ctx context.Context, cancel context.Can
 	for {
 		select {
 		case update := <-updates:
-			go messageProcessor(bot, *update.Message)
+			go messageProcessor(*bot, *update.Message)
 		case <-ctx.Done():
 			log.Printf("Closing signal goroutine")
 			return ctx.Err()
 		}
 	}
+}
+
+func (bot *TelegramModule) SendEventMessage(chatID int64, text string) error {
+	return sendPlainTextMessage(bot.bot, chatID, text)
 }
 
 //
