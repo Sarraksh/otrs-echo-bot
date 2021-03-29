@@ -155,6 +155,37 @@ func (db *DB) OTRSEventGetEarliestActivationTimestamp() (int64, error) {
 	}
 }
 
+// Mark event as "Processing" and add current timestamp into "Finished" column.
+func (db *DB) OTRSEventProcessing(id int64) error {
+	// Create new sql transaction.
+	transaction, err := db.Instance.Begin()
+	if err != nil {
+		return err
+	}
+	defer transaction.Rollback()
+
+	// Prepare and execute transaction for update row.
+	statement, err := transaction.Prepare(`UPDATE OTRSEventList SET Status = 'Processing' WHERE ID = ?;`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	// Update data into DB.
+	_, err = statement.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	// Close transaction.
+	err = transaction.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Mark event as "Suspended" and renew "NextActivation" time.
 func (db *DB) OTRSEventSuspend(id int64) error {
 	nextActivation := time.Now().Unix() + DefaultActivationInterval

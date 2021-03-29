@@ -8,6 +8,7 @@ type DBProvider interface {
 	OTRSEventCreateNew(Channel, Type string, TicketID int64) error
 	OTRSEventGetActive() (int64, string, error)
 	OTRSEventGetEarliestActivationTimestamp() (int64, error)
+	OTRSEventProcessing(id int64) error
 	OTRSEventSuspend(id int64) error
 	OTRSEventEnded(id int64) error
 	OTRSEventIsExistsWithTicketIDAndType(ticketID int64, eventType string) (bool, error)
