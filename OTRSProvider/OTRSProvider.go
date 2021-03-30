@@ -1,11 +1,12 @@
 package OTRSProvider
 
-import "github.com/Sarraksh/otrs-echo-bot/common/logger"
+import (
+	"github.com/Sarraksh/otrs-echo-bot/common/config"
+	"github.com/Sarraksh/otrs-echo-bot/common/logger"
+)
 
 type OTRSProvider interface {
-	Initialisation(endpoint, URLPrefix string, logger logger.Logger)
-	SetTransport(InsecureConnection bool)
-	SetURLFormat(protocol, URL, login, password string)
+	Initialise(logger logger.Logger, conf config.OTRSConf)
 	GetTicketDetails(ticketID string) (TicketOTRS, error)
 }
 

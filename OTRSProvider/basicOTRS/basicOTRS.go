@@ -5,41 +5,51 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/OTRSProvider"
+	"github.com/Sarraksh/otrs-echo-bot/common/config"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	"io/ioutil"
 	"net/http"
 )
 
 type BasicOTRS struct {
-	URLFormat       string
+	URLFormat       string // String for fmt.Sprintf. Represent full URL to OTRS API with %s flag for ticketID.
+	TicketURLPrefix string
 	HTTPClient      *http.Client
 	Log             logger.Logger
-	Endpoint        string
-	TicketURLPrefix string
 }
 
-func (bo *BasicOTRS) Initialisation(endpoint, URLPrefix string, logger logger.Logger) {
+func (bo *BasicOTRS) Initialise(logger logger.Logger, conf config.OTRSConf) {
 	logger.SetModuleName("OTRSProvider")
 	bo.Log = logger
-	bo.Endpoint = endpoint
-	bo.TicketURLPrefix = URLPrefix
-}
 
-// Initialise transport and set behavior for insecure connections.
-func (bo *BasicOTRS) SetTransport(InsecureConnection bool) {
-	// Avoid insecure connection error.
+	// Generate and save URLFormat
+	bo.URLFormat = urlFormat(
+		conf.API.Protocol,
+		conf.Host,
+		conf.API.GetTicketDetailListPath,
+		conf.API.Login,
+		conf.API.Password,
+	)
+	maskedURLString := urlFormat(
+		conf.API.Protocol,
+		conf.Host,
+		conf.API.GetTicketDetailListPath,
+		`*********`,
+		`*********`,
+	)
+	bo.Log.Debug(fmt.Sprintf("Set URLFormat - '%v'", maskedURLString))
+
+	// Avoid insecure connection error if OTRS API available by http.
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: InsecureConnection},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: conf.API.InsecureConnection},
 	}
 	bo.HTTPClient = &http.Client{Transport: tr}
-	bo.Log.Debug(fmt.Sprintf("Transport initialised. Set InsecureConnection as '%v'", InsecureConnection))
-}
+	bo.Log.Debug(fmt.Sprintf("Transport initialised. Set InsecureConnection as '%v'", conf.API.InsecureConnection))
 
-// Set protocol, URL and credentials for OTRS instance and store as format fo fmt.Sprintf .
-func (bo *BasicOTRS) SetURLFormat(protocol, URL, login, password string) {
-	bo.URLFormat = urlFormat(protocol, URL, bo.Endpoint, login, password)
-	maskedURLString := urlFormat(protocol, URL, bo.Endpoint, `*********`, `*********`)
-	bo.Log.Debug(fmt.Sprintf("Set URLFormat - '%v'", maskedURLString))
+	// Set TicketURLPrefix.
+	bo.TicketURLPrefix = conf.TicketURLPrefix
+
+	bo.Log.Debug("Initialisation complete")
 }
 
 func (bo *BasicOTRS) GetTicketDetails(ticketID string) (OTRSProvider.TicketOTRS, error) {
