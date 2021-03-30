@@ -37,7 +37,7 @@ type OTRSAPI struct {
 
 // Options for Telegram module.
 type TelegramConf struct {
-	Token string // Token from @BotFather.
+	Token string `yaml:"Token"` // Token from @BotFather.
 }
 
 // Used for encryption storage
