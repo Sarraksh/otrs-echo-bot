@@ -10,5 +10,5 @@ import (
 type RESTProvider interface {
 	Initialise(logger logger.Logger, db *DBProvider.DBProvider)
 	PrepareListener(eventProcessor *event.Processor)
-	Listen(ctx context.Context, cancel context.CancelFunc)
+	Listen(ctx context.Context, cancel context.CancelFunc) error
 }

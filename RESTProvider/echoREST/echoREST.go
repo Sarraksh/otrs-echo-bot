@@ -92,7 +92,7 @@ func (eREST *EchoREST) PrepareListener(eventProcessor *event.Processor) {
 }
 
 //
-func (eREST *EchoREST) Listen(ctx context.Context, cancel context.CancelFunc) {
+func (eREST *EchoREST) Listen(ctx context.Context, cancel context.CancelFunc) error {
 	go listenerWrapper(eREST.Instance, cancel, eREST.Log)
 	eREST.Log.Debug("Listener started")
 	select {
@@ -102,11 +102,11 @@ func (eREST *EchoREST) Listen(ctx context.Context, cancel context.CancelFunc) {
 		err := eREST.Instance.Shutdown(ctxShutdown)
 		if err != nil {
 			eREST.Log.Error("Can't gracefully interrupt listener by context done.")
-
+			return err
 		} else {
 			eREST.Log.Debug("Listener interrupted by context done.")
+			return nil
 		}
-		return
 	}
 }
 
