@@ -45,9 +45,11 @@ func main() {
 	logModule.Info(fmt.Sprintf("Go version '%v'", runtime.Version()))
 	logModule.Info("====================================================")
 
-	// TODO Read configuration from file.
 	// Read configuration from file.
-	var conf config.Config
+	conf, err := config.Initialise("config.yaml", "secret", programDirectory, logModule)
+	if err != nil {
+		logModule.Error(fmt.Sprintf("Configuration initialisation failed - '%v'. Stop OTRS_Echo_bot", err))
+	}
 
 	// Declare module variables.
 	var (
