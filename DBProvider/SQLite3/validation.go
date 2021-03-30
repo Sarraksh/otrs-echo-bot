@@ -204,19 +204,19 @@ func getValidTableInfo() map[string][]columnInfo {
 		columnInfo{CID: 0, Name: "ID", Type: "integer", NotNULL: 1, DefaultValue: nil, PrimaryKey: 1},
 		columnInfo{CID: 1, Name: "SocialMedia", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 2, Name: "ChatID", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
-		columnInfo{CID: 3, Name: "Text", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
+		columnInfo{CID: 3, Name: "MessageText", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 4, Name: "Created", Type: "integer", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
 		columnInfo{CID: 5, Name: "Sent", Type: "integer", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
 	)
 	result["MessageList"] = tmpTableInfo
 
-	//MessageList
+	//ClientTeamBound
 	tmpTableInfo = make([]columnInfo, 0, 16)
 	tmpTableInfo = append(tmpTableInfo,
 		columnInfo{CID: 0, Name: "Client", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 1},
-		columnInfo{CID: 1, Name: "Team", Type: "text", NotNULL: 0, DefaultValue: nil, PrimaryKey: 0},
+		columnInfo{CID: 1, Name: "Team", Type: "text", NotNULL: 1, DefaultValue: nil, PrimaryKey: 0},
 	)
-	result["ClientsAssignedToTeams"] = tmpTableInfo
+	result["ClientTeamBound"] = tmpTableInfo
 
 	return result
 }
