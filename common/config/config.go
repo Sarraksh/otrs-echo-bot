@@ -228,10 +228,6 @@ func isMandatoryFieldsPresent(config Config, logModule logger.Logger) bool {
 		allFieldsPresent = false
 		logModule.Error("Option 'OTRS.API.Protocol' is mandatory but not present")
 	}
-	if config.OTRS.API.Port == "" {
-		allFieldsPresent = false
-		logModule.Error("Option 'OTRS.API.Port' is mandatory but not present")
-	}
 	if config.OTRS.API.GetTicketDetailListPath == "" {
 		allFieldsPresent = false
 		logModule.Error("Option 'OTRS.API.GetTicketDetailListPath' is mandatory but not present")
