@@ -49,6 +49,7 @@ func main() {
 	conf, err := config.Initialise("config.yaml", "secret", programDirectory, logModule)
 	if err != nil {
 		logModule.Error(fmt.Sprintf("Configuration initialisation failed - '%v'. Stop OTRS_Echo_bot", err))
+		return
 	}
 
 	// Declare module variables.
