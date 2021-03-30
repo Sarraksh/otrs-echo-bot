@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 )
 
-const key string = "1rQ" // XOR encryption key
+const key string = "1rG" // XOR encryption key
 
 // Encrypt provided text.
 func Encrypt(text []byte) string {
