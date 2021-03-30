@@ -100,7 +100,7 @@ func readConfigFromYAMLFile(cfgFilePath string) (Config, error) {
 
 // Read sensitive data, merge with data provided from config file and write into file actual sensitive data.
 func mergeWitEncryptedData(conf Config, encryptedFile, programDirectory string) (Config, error) {
-	encryptionFileFullPath := filepath.Join(encryptedFile, programDirectory)
+	encryptionFileFullPath := filepath.Join(programDirectory, encryptedFile)
 
 	// Read ad decrypt sensitive data.
 	sensitiveData, err := readEncryptedDataFromFile(encryptionFileFullPath)
