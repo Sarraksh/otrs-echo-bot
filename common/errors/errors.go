@@ -20,3 +20,9 @@ var ErrUserAlreadyExists = errors.New("user already exists")
 // TelegramProvider
 var ErrArgumentNotProvided = errors.New("argument not provided")
 var ErrInvalidArgument = errors.New("invalid argument")
+
+// Config
+var ErrOTRSLoginNotProvided = errors.New("otrs login not provided")
+var ErrOTRSPasswordNotProvided = errors.New("otrs password not provided")
+var ErrTelegramTokenNotProvided = errors.New("telegram token not provided")
+var ErrMandatoryFieldMissing = errors.New("mandatory fields missing")
