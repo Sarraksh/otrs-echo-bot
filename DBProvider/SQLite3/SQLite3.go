@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/common/errors"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
+	_ "github.com/mattn/go-sqlite3"
 	"path/filepath"
 	"sync"
 )
@@ -43,6 +44,7 @@ func (db *DB) Initialise(logger logger.Logger, directory string) error {
 	// Prepare DB engine.
 	dbInstance, err := sql.Open("sqlite3", db.FileFullPath)
 	if err != nil {
+		db.Log.Error(fmt.Sprintf("DB instance initialisation failed '%v'", err))
 		return err
 	}
 	db.Instance = dbInstance
