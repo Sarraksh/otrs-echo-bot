@@ -61,7 +61,7 @@ create table MessageList (
 	sqlCreateClientTeamBoundTable = `
 create table ClientTeamBound (
 	Client text not null primary key,
-	Team text not null,
+	Team text not null
 );`
 )
 
