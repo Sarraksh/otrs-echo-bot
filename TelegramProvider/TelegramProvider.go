@@ -7,7 +7,7 @@ import (
 )
 
 type TelegramProvider interface {
-	Initialise(botToken string, logger logger.Logger, db *DBProvider.DBProvider)
+	Initialise(botToken string, logger logger.Logger, db *DBProvider.DBProvider) error
 	UpdateListener(ctx context.Context, cancel context.CancelFunc) error
-	SendEventMessage(chatID int64, text string)
+	SendEventMessage(chatID int64, text string) error
 }
