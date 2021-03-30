@@ -63,7 +63,7 @@ func NewZapSimpleLoggerWithRotation(logLevelStr string, logFilePath string, maxS
 
 // Add formatted module name to error string.
 func formatString(module, message string) string {
-	return fmt.Sprintf("[%25s] - '%s'", module, message)
+	return fmt.Sprintf("[%25s] - %s", module, message)
 }
 
 // Set caller module name.
