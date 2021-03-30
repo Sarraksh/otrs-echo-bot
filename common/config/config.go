@@ -35,16 +35,16 @@ type OTRSAPI struct {
 	GetTicketDetailListPath string `yaml:"GetTicketDetailListPath"` // Get ticket details.
 }
 
+// Options for Telegram module.
+type TelegramConf struct {
+	Token string // Token from @BotFather.
+}
+
 // Used for encryption storage
 type SensitiveData struct {
 	OTRSLogin     string
 	OTRSPassword  string
 	TelegramToken string
-}
-
-// Options for Telegram module.
-type TelegramConf struct {
-	Token string // Token from @BotFather.
 }
 
 func Initialise(configFileName, encryptedFileName, programDirectory string, logModule logger.Logger) (Config, error) {
@@ -91,7 +91,7 @@ func readConfigFromYAMLFile(cfgFilePath string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	err = yaml.Unmarshal(data, fileConfig)
+	err = yaml.Unmarshal(data, &fileConfig)
 	if err != nil {
 		return Config{}, err
 	}
