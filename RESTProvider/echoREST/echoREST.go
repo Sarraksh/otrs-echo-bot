@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/DBProvider"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
+	"github.com/Sarraksh/otrs-echo-bot/event"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"net/http"
@@ -32,7 +33,7 @@ func (eREST *EchoREST) Initialise(logger logger.Logger, db *DBProvider.DBProvide
 }
 
 // Prepare http listener.
-func (eREST *EchoREST) PrepareListener() {
+func (eREST *EchoREST) PrepareListener(eventProcessor *event.Processor) {
 	eREST.Log.Debug(fmt.Sprintf("Start REST instance initialisation"))
 
 	e := echo.New()             // Echo instance
@@ -68,7 +69,9 @@ func (eREST *EchoREST) PrepareListener() {
 		if !eventExist {
 			err = db.OTRSEventCreateNew(pathNewTicket, pathNewTicket, int64(idInt))
 		}
-		// TODO - invoke event processor
+
+		// Invoke event processor
+		eventProcessor.ProcessEvent()
 
 		c.Response().Header().Set("ResponseSuccess", "1")     // Needed by OTRS invoker
 		c.Response().Header().Set("ResponseErrorMessage", "") // Needed by OTRS invoker
