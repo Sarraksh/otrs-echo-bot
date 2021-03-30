@@ -17,6 +17,7 @@ import (
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger/zapLogger"
 	"github.com/Sarraksh/otrs-echo-bot/event"
+	"golang.org/x/sync/errgroup"
 	"log"
 	"os"
 	"os/signal"
@@ -80,6 +81,44 @@ func main() {
 	if err != nil {
 		logModule.Error(fmt.Sprintf("Modules initialisation failed - '%v'. Stop OTRS_Echo_bot", err))
 		return
+	}
+
+	// Initialise group for services with context.
+	logModule.Debug("Initialise group of services.")
+	ctxGroup, cancelGroup := context.WithCancel(context.Background())
+	defer cancelGroup()
+	group, ctxGroup := errgroup.WithContext(ctxGroup)
+
+	// Wait fot sigterm.
+	group.Go(func() error {
+		logModule.Debug(fmt.Sprintf("Start wait for sigterm."))
+		err := Sigterm(ctxGroup, cancelGroup)
+		logModule.Debug(fmt.Sprintf("Stop wait for sigterm with error '%v'.", err))
+		return err
+	})
+
+	// Start telegram update listener.
+	group.Go(func() error {
+		logModule.Debug(fmt.Sprintf("Start telegram update listener."))
+		err := TelegramModule.UpdateListener(ctxGroup, cancelGroup)
+		logModule.Debug(fmt.Sprintf("Stop telegram update listener with error '%v'.", err))
+		return err
+	})
+
+	// Start HTTP listener.
+	group.Go(func() error {
+		logModule.Debug(fmt.Sprintf("Start HTTP listener."))
+		err := RESTModule.Listen(ctxGroup, cancelGroup)
+		logModule.Debug(fmt.Sprintf("Stop HTTP listener with error '%v'.", err))
+		return err
+	})
+
+	// Wait for group routines in group.
+	logModule.Debug("Start wait group of services.")
+	err = group.Wait()
+	logModule.Error("Stop group of services.")
+	if err != nil {
+		logModule.Error(fmt.Sprintf("Stop group of services with error '%v'.", err))
 	}
 
 	logModule.Info("Stop OTRS_Echo_bot")
@@ -159,6 +198,7 @@ func initialiseModules(
 	}
 
 	(*RESTModule).Initialise(logModule, DBModule)
+	(*RESTModule).PrepareListener(EventProcessor)
 
 	logModule.Debug("Module initialisation sequence complete")
 	return nil
