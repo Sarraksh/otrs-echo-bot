@@ -98,14 +98,24 @@ func readConfigFromYAMLFile(cfgFilePath string) (Config, error) {
 	return fileConfig, err
 }
 
+// Read sensitive data, merge with data provided from config file and write into file actual sensitive data.
 func mergeWitEncryptedData(conf Config, encryptedFile, programDirectory string) (Config, error) {
 	encryptionFileFullPath := filepath.Join(encryptedFile, programDirectory)
+
+	// Read ad decrypt sensitive data.
 	sensitiveData, err := readEncryptedDataFromFile(encryptionFileFullPath)
-	if err != nil {
+	switch {
+	case os.IsNotExist(err): // Handle case when encryption file not exits.
+		sensitiveData = SensitiveData{
+			OTRSLogin:     "",
+			OTRSPassword:  "",
+			TelegramToken: "",
+		}
+	case err != nil:
 		return Config{}, err
 	}
 
-	// Merge data from  config and previously encrypted data.
+	// Merge data from config and previously encrypted data.
 	if conf.OTRS.API.Login == "" {
 		conf.OTRS.API.Login = sensitiveData.OTRSLogin
 	} else {
@@ -128,6 +138,7 @@ func mergeWitEncryptedData(conf Config, encryptedFile, programDirectory string) 
 		return Config{}, err
 	}
 
+	// Encrypt and write into file actual sensitive data.
 	err = writeEncryptedDataIntoFile(encryptionFileFullPath, sensitiveData)
 	if err != nil {
 		return Config{}, err
@@ -194,6 +205,7 @@ func checkSensitiveDataProvided(sensData SensitiveData) error {
 	return nil
 }
 
+// Check existence for all mandatory options.
 func isMandatoryFieldsPresent(config Config, logModule logger.Logger) bool {
 	var allFieldsPresent bool = true
 	if config.OTRS.Host == "" {
