@@ -14,25 +14,25 @@ import (
 
 // Combine all available options.
 type Config struct {
-	OTRS     OTRSConf
-	Telegram TelegramConf
+	OTRS     OTRSConf     `yaml:"OTRS"`
+	Telegram TelegramConf `yaml:"Telegram"`
 }
 
 // Options for OTRS module.
 type OTRSConf struct {
-	Host            string // Host on which OTRS is located.
-	TicketURLPrefix string // Prefix for ticket URL for browser (include port if not default).
-	API             OTRSAPI
+	Host            string  `yaml:"Host"`            // Host on which OTRS is located.
+	TicketURLPrefix string  `yaml:"TicketURLPrefix"` // Prefix for ticket URL for browser (include port if not default).
+	API             OTRSAPI `yaml:"API"`
 }
 
 // OTRS API configuration.
 type OTRSAPI struct {
-	Login                   string // Login for API.
-	Password                string // Password for API.
-	Protocol                string // Protocol over which the API is available. http or https.
-	Port                    string // Port over which the API is available.
-	InsecureConnection      bool   // If true allow insecure connections to API.
-	GetTicketDetailListPath string // Get ticket details.
+	Login                   string `yaml:"Login"`                   // Login for API.
+	Password                string `yaml:"Password"`                // Password for API.
+	Protocol                string `yaml:"Protocol"`                // Protocol over which the API is available. http or https.
+	Port                    string `yaml:"Port"`                    // Port over which the API is available.
+	InsecureConnection      bool   `yaml:"InsecureConnection"`      // If true allow insecure connections to API.
+	GetTicketDetailListPath string `yaml:"GetTicketDetailListPath"` // Get ticket details.
 }
 
 // Used for encryption storage
