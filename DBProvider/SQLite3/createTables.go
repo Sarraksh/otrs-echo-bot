@@ -75,7 +75,7 @@ func createAllTablesIfNotExist(db *sql.DB, Log logger.Logger) error {
 	tableCreateStatementList["SubscriptionList"] = sqlCreateSubscriptionListTable
 	tableCreateStatementList["SubscriptionScheduler"] = sqlCreateSubscriptionSchedulerTable
 	tableCreateStatementList["MessageList"] = sqlCreateMessageListTable
-	tableCreateStatementList["ClientsAssignedToTeams"] = sqlCreateClientTeamBoundTable
+	tableCreateStatementList["ClientTeamBound"] = sqlCreateClientTeamBoundTable
 
 	for currentTable, statement := range tableCreateStatementList {
 		Log.Debug(fmt.Sprintf("Processing '%+v' table", currentTable))
