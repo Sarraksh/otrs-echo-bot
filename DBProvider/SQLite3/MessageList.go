@@ -10,10 +10,6 @@ func (db *DB) MessageListNewMessage(sm string, chatID int64, text string) (int64
 	db.Log.Debug(fmt.Sprintf("Add new message for chat '%v' in '%v'. Text - '%v'", chatID, sm, text))
 
 	// Prepare data for insert.
-	db.LastIDmx.Lock()
-	ID := db.LastID.MessageList + 1
-	db.LastID.MessageList = ID
-	db.LastIDmx.Unlock()
 	Created := time.Now().Unix()
 
 	// Create new sql transaction.
@@ -25,7 +21,7 @@ func (db *DB) MessageListNewMessage(sm string, chatID int64, text string) (int64
 	defer transaction.Rollback()
 
 	// Prepare transaction for insert into table.
-	statement, err := transaction.Prepare(`INSERT INTO MessageList(ID, SocialMedia, ChatID, MessageText, Created) VALUES(?, ?, ?, ?, ?);`)
+	statement, err := transaction.Prepare(`INSERT INTO MessageList(SocialMedia, ChatID, MessageText, Created) VALUES(?, ?, ?, ?);`)
 	if err != nil {
 		db.Log.Error(fmt.Sprintf("Can't prepare transaction for add new message for caht '%v' in '%v' - '%v'", chatID, sm, err))
 		return 0, err
@@ -33,9 +29,16 @@ func (db *DB) MessageListNewMessage(sm string, chatID int64, text string) (int64
 	defer statement.Close()
 
 	// Execute statement.
-	_, err = statement.Exec(ID, sm, chatID, text, Created)
+	result, err := statement.Exec(sm, chatID, text, Created)
 	if err != nil {
 		db.Log.Error(fmt.Sprintf("Can't execute transaction for add new message for caht '%v' in '%v' - '%v'", chatID, sm, err))
+		return 0, err
+	}
+
+	// Get inserted row ID.
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		db.Log.Error(fmt.Sprintf("While get inserted row ID for add new message for caht '%v' in '%v' - '%v'", chatID, sm, err))
 		return 0, err
 	}
 
@@ -47,7 +50,7 @@ func (db *DB) MessageListNewMessage(sm string, chatID int64, text string) (int64
 	}
 
 	db.Log.Debug(fmt.Sprintf("Succesfully add new message for chat '%v' in '%v'. Text - '%v'", chatID, sm, text))
-	return ID, nil
+	return lastInsertID, nil
 }
 
 // Mark message as delivered dy message ID.

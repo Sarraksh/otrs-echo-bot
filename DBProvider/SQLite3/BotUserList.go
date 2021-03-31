@@ -20,10 +20,6 @@ func (db *DB) BotUserAdd(tgID int64) error {
 	}
 
 	// Prepare data for insert.
-	db.LastIDmx.Lock()
-	userID := db.LastID.BotUserList + 1
-	db.LastID.BotUserList = userID
-	db.LastIDmx.Unlock()
 	Token := "" // TODO - implement token generation and fill token for all old users
 	Active := 1 // User is active
 	FirstName := ""
@@ -40,15 +36,14 @@ func (db *DB) BotUserAdd(tgID int64) error {
 
 	// Prepare and execute transaction for insert row.
 	sqlStatement, err := sqlTransaction.Prepare(
-		`insert into BotUserList(ID, Token, Active, FirstName, LastName, Phone, Email, Created, TelegramID)
-values(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`insert into BotUserList(Token, Active, FirstName, LastName, Phone, Email, Created, TelegramID)
+values(?, ?, ?, ?, ?, ?, ?, ?)`,
 	)
 	if err != nil {
 		return err
 	}
 	defer sqlStatement.Close()
 	_, err = sqlStatement.Exec(
-		userID,
 		Token,
 		Active,
 		FirstName,

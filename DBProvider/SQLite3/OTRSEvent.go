@@ -12,10 +12,6 @@ func (db *DB) OTRSEventCreateNew(Channel, Type string, TicketID int64) error {
 	db.Log.Info(fmt.Sprintf("Write new OTRS event with type '%+v' and ticket ID '%+v'", Type, TicketID))
 
 	// Prepare data for insert.
-	db.LastIDmx.Lock()
-	ID := db.LastID.OTRSEventList + 1
-	db.LastID.OTRSEventList = ID
-	db.LastIDmx.Unlock()
 	Status := "New"
 	Created := time.Now().Unix()
 	NextActivation := Created + DefaultActivationInterval
@@ -28,8 +24,8 @@ func (db *DB) OTRSEventCreateNew(Channel, Type string, TicketID int64) error {
 	defer transaction.Rollback()
 
 	// Prepare and execute transaction for update row.
-	statement, err := transaction.Prepare(`INSERT INTO OTRSEventList(ID, Status, Channel, Type, TicketID, Created, ActivationInterval, NextActivation)
-values(?, ?, ?, ?, ?, ?, ?, ?)`,
+	statement, err := transaction.Prepare(`INSERT INTO OTRSEventList(Status, Channel, Type, TicketID, Created, ActivationInterval, NextActivation)
+values(?, ?, ?, ?, ?, ?, ?)`,
 	)
 	if err != nil {
 		return err
@@ -38,7 +34,6 @@ values(?, ?, ?, ?, ?, ?, ?, ?)`,
 
 	// Update data into DB.
 	_, err = statement.Exec(
-		ID,
 		Status,
 		Channel,
 		Type,

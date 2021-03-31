@@ -7,7 +7,6 @@ import (
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
 	_ "github.com/mattn/go-sqlite3"
 	"path/filepath"
-	"sync"
 )
 
 const (
@@ -21,8 +20,6 @@ type DB struct {
 	Instance     *sql.DB
 	FileFullPath string
 	Log          logger.Logger
-	LastID       lastID
-	LastIDmx     sync.Mutex
 }
 
 // Store last ID for each table with ID column.
@@ -60,91 +57,7 @@ func (db *DB) Initialise(logger logger.Logger, directory string) error {
 		return errors.ErrTablesValidationFailed
 	}
 
-	// Collect last ID for tables
-	LID, err := getLastIDAllTables(db.Instance, db.Log)
-	if err != nil {
-		db.Log.Error(fmt.Sprintf("Can't collect last ID for tables - '%v'", err))
-		return err
-	}
-	db.LastIDmx.Lock()
-	db.LastID = LID
-	db.LastIDmx.Unlock()
-
 	return nil
-}
-
-// Get last ID for each table with ID column.
-func getLastIDAllTables(db *sql.DB, Log logger.Logger) (lastID, error) {
-	var LID lastID
-
-	currentResult, err := getLastIDFromTable(db, Log, "BotUserList", "Created", "ID")
-	if err != nil {
-		return lastID{}, err
-	}
-	LID.BotUserList = currentResult
-
-	currentResult, err = getLastIDFromTable(db, Log, "OTRSEventList", "Created", "ID")
-	if err != nil {
-		return lastID{}, err
-	}
-	LID.OTRSEventList = currentResult
-
-	currentResult, err = getLastIDFromTable(db, Log, "MessageList", "Created", "ID")
-	if err != nil {
-		return lastID{}, err
-	}
-	LID.MessageList = currentResult
-
-	return LID, nil
-}
-
-// Get last ID from table by timestamp column.
-func getLastIDFromTable(db *sql.DB, Log logger.Logger, tableName, timestampColumn, idColumn string) (int64, error) {
-	Log.Debug(fmt.Sprintf("Get last ID from table '%v' by timestamp. Timestamp column name '%v'. ID column name '%v'.",
-		tableName, timestampColumn, idColumn))
-
-	// Create new sql transaction.
-	transaction, err := db.Begin()
-	if err != nil {
-		return 0, err
-	}
-
-	// Prepare transaction for query.
-	statement, err := transaction.Prepare(`SELECT ? FROM ? ORDER BY ? DESC LIMIT 1;`)
-	if err != nil {
-		return 0, err
-	}
-	defer statement.Close()
-
-	// Query provided table for last ID.
-	rows, err := statement.Query(idColumn, tableName, timestampColumn)
-	if err != nil {
-		return 0, err
-	}
-	defer rows.Close()
-
-	// Check query result.
-	var resultID int64 = 0
-	for rows.Next() {
-		err = rows.Scan(&resultID)
-		if err != nil {
-			Log.Error(fmt.Sprintf("Can't scan last timestamp from table '%s' - '%v'", tableName, err))
-			return 0, err
-		}
-	}
-	err = rows.Err()
-	if err != nil {
-		Log.Error(fmt.Sprintf("While iteration for table '%s' - '%v'", tableName, err))
-		return 0, err
-	}
-
-	// Close transaction.
-	err = transaction.Commit()
-	if err != nil {
-		return 0, err
-	}
-
-	return resultID, nil
 }
 
 func executeStatement(db *sql.DB, statement string) error {
