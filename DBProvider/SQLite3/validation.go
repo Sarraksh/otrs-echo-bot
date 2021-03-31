@@ -19,31 +19,39 @@ type columnInfo struct {
 // Validate all data tables and returns false if one them is invalid.
 func isValidAllTables(db *sql.DB, Log logger.Logger) bool {
 	var allTablesIsValid bool = true
-	Log.Debug("All tables validation started")
+	Log.Debug("Start table validation")
 
 	validTableInfo := getValidTableInfo()
 	for tableName, tableInfo := range validTableInfo {
 		exist, err := isTableExists(db, Log, tableName)
 		if err != nil {
 			allTablesIsValid = false
+			Log.Error(fmt.Sprintf("While check table '%v' existense - '%v'", tableName, err))
 			continue
 		}
 		if !exist {
 			allTablesIsValid = false
+			Log.Error(fmt.Sprintf("Table '%v' not exists.", tableName))
 			continue
 		}
 		valid, err := isTableValid(db, Log, tableName, tableInfo)
 		if err != nil {
 			allTablesIsValid = false
+			Log.Error(fmt.Sprintf("While validation table '%v' - '%v'", tableName, err))
 			continue
 		}
 		if !valid {
 			allTablesIsValid = false
+			Log.Error(fmt.Sprintf("Table '%v' is not valid.", tableName))
 			continue
 		}
 	}
 
-	Log.Debug("All tables validation finished")
+	if allTablesIsValid {
+		Log.Debug("All tables valid")
+	} else {
+		Log.Debug("Invalid tables detected")
+	}
 	return allTablesIsValid
 }
 
@@ -51,9 +59,6 @@ func isValidAllTables(db *sql.DB, Log logger.Logger) bool {
 // Return bool as result and error if occurred on DB engine layer.
 // Write to log BD engine errors, validation errors and debug info.
 func isTableExists(db *sql.DB, Log logger.Logger, tableName string) (bool, error) {
-	Log.Debug(fmt.Sprintf("Start existance check for table '%v'", tableName))
-	defer Log.Debug(fmt.Sprintf("Existance check for table '%v' complete", tableName))
-
 	// Query master table for current table
 	queryString := fmt.Sprintf("SELECT name FROM sqlite_master WHERE type='table' AND name='%s';", tableName)
 	rows, err := db.Query(queryString)
@@ -72,15 +77,16 @@ func isTableExists(db *sql.DB, Log logger.Logger, tableName string) (bool, error
 			return false, err
 		}
 		if resultTableName == tableName {
-			Log.Debug(fmt.Sprintf("Table '%v' exists", tableName))
 			return true, nil
 		}
 	}
+
 	err = rows.Err()
 	if err != nil {
 		Log.Error(fmt.Sprintf("While iteration for table '%s' - '%v'", tableName, err))
 		return false, err
 	}
+
 	return false, nil
 }
 
@@ -88,9 +94,6 @@ func isTableExists(db *sql.DB, Log logger.Logger, tableName string) (bool, error
 // Return bool as result and error if occurred on DB engine layer.
 // Write to log BD engine errors, validation errors and debug info.
 func isTableValid(db *sql.DB, Log logger.Logger, tableName string, tableInfo []columnInfo) (bool, error) {
-	Log.Debug(fmt.Sprintf("Start validation for table '%v'", tableName))
-	defer Log.Debug(fmt.Sprintf("Validation check fot table '%v' complete", tableName))
-
 	// Query "pragma table_info()" for detailed columns info
 	queryString := fmt.Sprintf("pragma table_info(%s);", tableName)
 	rows, err := db.Query(queryString)

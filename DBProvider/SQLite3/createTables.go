@@ -78,15 +78,15 @@ func createAllTablesIfNotExist(db *sql.DB, Log logger.Logger) error {
 	tableCreateStatementList["ClientTeamBound"] = sqlCreateClientTeamBoundTable
 
 	for currentTable, statement := range tableCreateStatementList {
-		Log.Debug(fmt.Sprintf("Processing '%+v' table", currentTable))
 		tableExist, err := isTableExists(db, Log, currentTable)
 		if err != nil {
 			return err
 		}
 		if tableExist {
+			Log.Debug(fmt.Sprintf("Table '%+v' exists", currentTable))
 			continue
 		}
-		Log.Debug(fmt.Sprintf("Table '%+v' not exist. Create it", currentTable))
+		Log.Debug(fmt.Sprintf("Table '%+v' not exists. Create it", currentTable))
 
 		err = executeStatement(db, statement)
 		if err != nil {
