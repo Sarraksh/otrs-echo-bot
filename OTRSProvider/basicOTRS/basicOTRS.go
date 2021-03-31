@@ -11,6 +11,8 @@ import (
 	"net/http"
 )
 
+const ModuleName string = "OTRS Provider"
+
 type BasicOTRS struct {
 	URLFormat       string // String for fmt.Sprintf. Represent full URL to OTRS API with %s flag for ticketID.
 	TicketURLPrefix string
@@ -19,7 +21,7 @@ type BasicOTRS struct {
 }
 
 func (bo *BasicOTRS) Initialise(logger logger.Logger, conf config.OTRSConf) {
-	bo.Log = logger.SetModuleName("OTRSProvider")
+	bo.Log = logger.SetModuleName(ModuleName)
 
 	// Generate and save URLFormat
 	bo.URLFormat = urlFormat(

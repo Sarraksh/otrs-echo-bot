@@ -27,6 +27,7 @@ import (
 )
 
 const version string = `0.1.0.0`
+const ModuleName string = "Main Routine"
 
 func main() {
 	// Get and save program directory.
@@ -36,7 +37,7 @@ func main() {
 	}
 	var logModule logger.Logger
 	logModule = zapLogger.NewDefault(filepath.Join(programDirectory, "log", "otrs-echo-bot"))
-	logModule = logModule.SetModuleName("MainRoutine")
+	logModule = logModule.SetModuleName(ModuleName)
 
 	// Print in log start info
 	logModule.Info("====================================================")
@@ -184,7 +185,7 @@ func initialiseModules(
 	logModule.Debug("Initialise Telegram module")
 	err = (*TelegramModule).Initialise(conf.Telegram.Token, logModule, DBModule)
 	if err != nil {
-		logModule.Error(fmt.Sprintf("Initialise Telegram module  failed - '%v'", err))
+		logModule.Error(fmt.Sprintf("Initialise Telegram module failed - '%v'", err))
 		return err
 	}
 
@@ -197,7 +198,7 @@ func initialiseModules(
 		OTRS:     OTRSModule,
 		Client:   ClientModule,
 		Telegram: TelegramModule,
-		Log:      logModule.SetModuleName("EventProcessor"),
+		Log:      logModule.SetModuleName("Event Processor"),
 	}
 
 	(*RESTModule).Initialise(logModule, DBModule)

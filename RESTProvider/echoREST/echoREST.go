@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const ModuleName string = "REST Provider ECHO"
+
 type EchoREST struct {
 	Instance *echo.Echo
 	Log      logger.Logger
@@ -27,7 +29,7 @@ type ResponseToOTRS struct {
 
 // Initialise echoREST module.
 func (eREST *EchoREST) Initialise(logger logger.Logger, db *DBProvider.DBProvider) {
-	eREST.Log = logger.SetModuleName("echoREST")
+	eREST.Log = logger.SetModuleName(ModuleName)
 	eREST.DB = db
 }
 

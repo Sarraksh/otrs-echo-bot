@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ModuleName                string = "DBProviderSQLite3"
+	ModuleName                string = "DB Provider SQLite3"
 	DBFileName                string = "sqlite3.bd"
 	DefaultActivationInterval int64  = 300 // In seconds
 )

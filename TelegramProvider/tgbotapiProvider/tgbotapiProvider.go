@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-const ModuleName = "TelegramProviderTgBotApi"
+const ModuleName = "TelegramProvider TgBotApi"
 
 // Implement TelegramProvider interface.
 type TelegramModule struct {
