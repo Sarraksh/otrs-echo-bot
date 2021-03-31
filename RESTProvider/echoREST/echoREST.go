@@ -27,8 +27,7 @@ type ResponseToOTRS struct {
 
 // Initialise echoREST module.
 func (eREST *EchoREST) Initialise(logger logger.Logger, db *DBProvider.DBProvider) {
-	logger.SetModuleName("echoREST")
-	eREST.Log = logger
+	eREST.Log = logger.SetModuleName("echoREST")
 	eREST.DB = db
 }
 

@@ -19,8 +19,7 @@ type BasicOTRS struct {
 }
 
 func (bo *BasicOTRS) Initialise(logger logger.Logger, conf config.OTRSConf) {
-	logger.SetModuleName("OTRSProvider")
-	bo.Log = logger
+	bo.Log = logger.SetModuleName("OTRSProvider")
 
 	// Generate and save URLFormat
 	bo.URLFormat = urlFormat(

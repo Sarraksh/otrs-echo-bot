@@ -27,7 +27,7 @@ func EventNewPlainText(ticket OTRSProvider.TicketOTRS) string {
 }
 
 func EventReminderPlainText(ticket OTRSProvider.TicketOTRS, logger logger.Logger) string {
-	logger.SetModuleName("Message formatter")
+	logger = logger.SetModuleName("Message formatter")
 	age := ageCalculation(ticket.Created, logger)
 	return fmt.Sprint( // Ticket information formatting
 		"UP ",
@@ -50,7 +50,7 @@ func EventReminderPlainText(ticket OTRSProvider.TicketOTRS, logger logger.Logger
 func ageCalculation(absoluteAge string, logger logger.Logger) string {
 	created, err := time.Parse(OTRSLayout, fmt.Sprint(absoluteAge, " MSK")) // Add timezone.
 	if err != nil {
-		log.Println("Can' parse age")
+		log.Println("Can't parse age")
 		return "UNKNOWN"
 	}
 
