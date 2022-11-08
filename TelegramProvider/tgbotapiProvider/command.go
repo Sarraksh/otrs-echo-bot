@@ -3,7 +3,7 @@ package tgbotapiProvider
 import (
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/DBProvider"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"regexp"
 )
@@ -38,7 +38,7 @@ func extractCommandList(message tgbotapi.Message) []Command {
 func getNameFromCommandArgument(text string, commandOffset, commandLength uint64) (string, error) {
 	argumentOffset := commandOffset + commandLength + 1
 	if int64(len(text))-1-int64(argumentOffset) <= 0 {
-		return "", errors.ErrArgumentNotProvided
+		return "", myErrors.ErrArgumentNotProvided
 	}
 
 	reFirstArgumentWithSpaces := regexp.MustCompile(`^\s*\S+`)
@@ -48,14 +48,14 @@ func getNameFromCommandArgument(text string, commandOffset, commandLength uint64
 	firstArgument := reFirstArgument.FindString(firstArgumentWithSpaces)
 
 	if len(firstArgumentWithSpaces) < 1 {
-		return "", errors.ErrArgumentNotProvided
+		return "", myErrors.ErrArgumentNotProvided
 	}
 
 	reRussianLettersOnly := regexp.MustCompile(`^[абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ]+$`)
 	argument := reRussianLettersOnly.FindString(firstArgument)
 
 	if len(argument) < 1 {
-		return "", errors.ErrInvalidArgument
+		return "", myErrors.ErrInvalidArgument
 	}
 
 	return argument, nil
@@ -118,7 +118,7 @@ func commandSubscribe(bot TelegramModule, message tgbotapi.Message, command Comm
 	db := *bot.DB
 	DBUserID, err := db.BotUserGetByTelegramID(message.Chat.ID)
 	switch {
-	case err == errors.ErrNoUsersFound:
+	case err == myErrors.ErrNoUsersFound:
 		// If user not found use "start" command behavior.
 		commandStart(bot, message)
 	case err != nil:
@@ -142,7 +142,7 @@ func commandUnsubscribe(bot TelegramModule, message tgbotapi.Message, command Co
 	db := *bot.DB
 	DBUserID, err := db.BotUserGetByTelegramID(message.Chat.ID)
 	switch {
-	case err == errors.ErrNoUsersFound:
+	case err == myErrors.ErrNoUsersFound:
 		// If user not found use "start" command behavior.
 		commandStart(bot, message)
 	case err != nil:
@@ -167,7 +167,7 @@ func commandStart(bot TelegramModule, message tgbotapi.Message) {
 
 	db := *bot.DB
 	err := db.BotUserAdd(message.Chat.ID)
-	if err != nil && err != errors.ErrNoUsersFound {
+	if err != nil && err != myErrors.ErrNoUsersFound {
 		// TODO - add exit program with error
 		bot.Log.Error(fmt.Sprintf("Can't create new user - '%v'", err))
 	}

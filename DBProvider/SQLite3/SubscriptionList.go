@@ -2,7 +2,7 @@ package SQLite3
 
 import (
 	"fmt"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	"time"
 )
 
@@ -159,7 +159,7 @@ func (db *DB) SubscriptionListAdd(userID int64, newSubscription string) error {
 	for _, activeSubscription := range activeSubscriptionList {
 		if activeSubscription == newSubscription {
 			db.Log.Debug(fmt.Sprintf("User already subscribed for '%v'", newSubscription))
-			return errors.ErrAlreadySubscribed
+			return myErrors.ErrAlreadySubscribed
 		}
 	}
 
@@ -216,7 +216,7 @@ func (db *DB) SubscriptionListRemove(userID int64, removeSubscription string) er
 		}
 	}
 	if !subscribed {
-		return errors.ErrNotSubscribed
+		return myErrors.ErrNotSubscribed
 	}
 
 	// Create new sql transaction for remove subscription.

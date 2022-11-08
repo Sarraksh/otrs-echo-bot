@@ -7,8 +7,8 @@ import (
 	"github.com/Sarraksh/otrs-echo-bot/Formatter"
 	"github.com/Sarraksh/otrs-echo-bot/OTRSProvider"
 	"github.com/Sarraksh/otrs-echo-bot/TelegramProvider"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	"sync"
 )
 
@@ -30,7 +30,7 @@ func (p *Processor) ProcessEvent() {
 	// Check events for processing.
 	p.Log.Debug("Start search for active events.")
 	eventDBID, ticketID, err := (*p.DB).OTRSEventGetActive()
-	if err == errors.ErrNoActiveEvents {
+	if err == myErrors.ErrNoActiveEvents {
 		p.Log.Debug("No active events.")
 		return
 	}
@@ -96,10 +96,10 @@ func (p *Processor) ProcessEvent() {
 	case nil:
 		p.Log.Debug(fmt.Sprintf("Team '%v' bounded with client '%v'. Send message to all subscribed users.", team, ticketDetails.CustomerID))
 		go sendMessageForByTeam(team, message, p.DB, p.Log, p.Telegram)
-	case errors.ErrNoTeamBounded:
+	case myErrors.ErrNoTeamBounded:
 		p.Log.Debug(fmt.Sprintf("No team bounded with client '%v'. Send message to all users.", ticketDetails.CustomerID))
 		go sendMessageForAllBotUsers(message, p.DB, p.Log, p.Telegram)
-	case errors.ErrClientNotExists:
+	case myErrors.ErrClientNotExists:
 		p.Log.Debug(fmt.Sprintf("Client '%v' not found. Add into DB", ticketDetails.CustomerID))
 		err := clientModule.AddClient(ticketDetails.CustomerID)
 		if err != nil {
@@ -107,7 +107,7 @@ func (p *Processor) ProcessEvent() {
 			p.Log.Error(fmt.Sprintf("Can't add new client '%v'", ticketDetails.CustomerID))
 			return
 		}
-	case errors.ErrMoreThenOneTeamBounded:
+	case myErrors.ErrMoreThenOneTeamBounded:
 		p.Log.Error(fmt.Sprintf("With client '%v' bound more than one team. Send message to all users.", ticketDetails.CustomerID))
 		go sendMessageForAllBotUsers(message, p.DB, p.Log, p.Telegram)
 	default:

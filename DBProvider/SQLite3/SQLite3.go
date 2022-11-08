@@ -3,8 +3,8 @@ package SQLite3
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	_ "github.com/mattn/go-sqlite3"
 	"path/filepath"
 )
@@ -54,7 +54,7 @@ func (db *DB) Initialise(logger logger.Logger, directory string) error {
 
 	// Validate all tables.
 	if !isValidAllTables(db.Instance, db.Log) {
-		return errors.ErrTablesValidationFailed
+		return myErrors.ErrTablesValidationFailed
 	}
 
 	return nil

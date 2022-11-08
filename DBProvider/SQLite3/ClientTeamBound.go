@@ -2,7 +2,7 @@ package SQLite3
 
 import (
 	"fmt"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 )
 
 // Add new client with bounded team.
@@ -11,7 +11,7 @@ func (db *DB) ClientTeamBoundClientAdd(client, team string) error {
 
 	// Check if client already exists.
 	_, err := db.ClientTeamBoundGetTeamByClient(client)
-	if err != errors.ErrClientNotExists {
+	if err != myErrors.ErrClientNotExists {
 		return err
 	}
 
@@ -142,15 +142,15 @@ func (db *DB) ClientTeamBoundGetTeamByClient(client string) (string, error) {
 	switch {
 	case rowNumber == 0:
 		db.Log.Debug(fmt.Sprintf("Client '%+v' not exist", client))
-		return "", errors.ErrClientNotExists
+		return "", myErrors.ErrClientNotExists
 	case rowNumber == 1:
 		if team == "" {
 			db.Log.Debug(fmt.Sprintf("Client '%+v' has no team bounded", client))
-			return "", errors.ErrNoTeamBounded
+			return "", myErrors.ErrNoTeamBounded
 		}
 	case rowNumber > 1:
 		db.Log.Debug(fmt.Sprintf("Client '%+v' has more then one team bounded", client))
-		return "", errors.ErrMoreThenOneTeamBounded
+		return "", myErrors.ErrMoreThenOneTeamBounded
 	}
 
 	// Close transaction.

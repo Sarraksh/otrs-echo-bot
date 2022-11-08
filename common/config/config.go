@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Sarraksh/otrs-echo-bot/common/encryption"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
 	"github.com/Sarraksh/otrs-echo-bot/common/logger"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -63,7 +63,7 @@ func Initialise(configFileName, encryptedFileName, programDirectory string, logM
 
 	// Find missing mandatory fields, write into log if some fined and close with program error.
 	if !isMandatoryFieldsPresent(config, logModule) {
-		return Config{}, errors.ErrMandatoryFieldMissing
+		return Config{}, myErrors.ErrMandatoryFieldMissing
 	}
 
 	return config, nil
@@ -196,11 +196,11 @@ func writeEncryptedDataIntoFile(encryptionFileFullPath string, sensitiveData Sen
 func checkSensitiveDataProvided(sensData SensitiveData) error {
 	switch {
 	case sensData.OTRSLogin == "":
-		return errors.ErrOTRSLoginNotProvided
+		return myErrors.ErrOTRSLoginNotProvided
 	case sensData.OTRSPassword == "":
-		return errors.ErrOTRSPasswordNotProvided
+		return myErrors.ErrOTRSPasswordNotProvided
 	case sensData.TelegramToken == "":
-		return errors.ErrTelegramTokenNotProvided
+		return myErrors.ErrTelegramTokenNotProvided
 	}
 	return nil
 }

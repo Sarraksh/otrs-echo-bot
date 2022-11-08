@@ -2,7 +2,7 @@ package SQLite3
 
 import (
 	"fmt"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	"time"
 )
 
@@ -108,7 +108,7 @@ func (db *DB) OTRSEventGetActive() (int64, string, error) {
 
 	// Check if no one row received.
 	if ID == 0 {
-		return 0, "", errors.ErrNoActiveEvents
+		return 0, "", myErrors.ErrNoActiveEvents
 	}
 
 	ticketID := fmt.Sprint(ticketIDint)

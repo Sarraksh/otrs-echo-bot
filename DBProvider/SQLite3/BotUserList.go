@@ -2,7 +2,7 @@ package SQLite3
 
 import (
 	"fmt"
-	"github.com/Sarraksh/otrs-echo-bot/common/errors"
+	"github.com/Sarraksh/otrs-echo-bot/common/myErrors"
 	"time"
 )
 
@@ -14,8 +14,8 @@ func (db *DB) BotUserAdd(tgID int64) error {
 	_, err := db.BotUserGetByTelegramID(tgID)
 	switch {
 	case err == nil:
-		return errors.ErrUserAlreadyExists
-	case err != errors.ErrNoUsersFound:
+		return myErrors.ErrUserAlreadyExists
+	case err != myErrors.ErrNoUsersFound:
 		return err
 	}
 
@@ -171,9 +171,9 @@ func (db *DB) BotUserGetByTelegramID(tgID int64) (int64, error) {
 	// Check if more than one row or no raws received.
 	switch {
 	case numberOfUsers > 1:
-		return userID, errors.ErrMoreThanOneUser
+		return userID, myErrors.ErrMoreThanOneUser
 	case numberOfUsers == 0:
-		return 0, errors.ErrNoUsersFound
+		return 0, myErrors.ErrNoUsersFound
 	}
 
 	return userID, nil
@@ -225,9 +225,9 @@ func (db *DB) BotUserGetTelegramIDByID(ID int64) (int64, error) {
 	// Check if more than one row or no raws received.
 	switch {
 	case rowNumber > 1:
-		return telegramID, errors.ErrMoreThanOneUser
+		return telegramID, myErrors.ErrMoreThanOneUser
 	case rowNumber == 0:
-		return 0, errors.ErrNoUsersFound
+		return 0, myErrors.ErrNoUsersFound
 	}
 
 	// Close transaction.
